@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3f51b5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#66000000</color>
+
+    <color name="bg_splash">#F4F4F5</color>
+    <color name="bg_toolbar_busqueda">#00bfa5</color>
+    <color name="bg_input_busqueda">#1e88e5</color>
+</resources>

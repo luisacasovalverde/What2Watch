@@ -9,10 +9,12 @@ import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.Transformation;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -186,48 +188,13 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
         v.startAnimation(anim);
     }*/
 
-    public class ResizeAnimation extends Animation {
-        private View mView;
-        private float mToHeight;
-        private float mFromHeight;
-
-        private float mToWidth;
-        private float mFromWidth;
-
-        public ResizeAnimation(View v, float fromWidth, float fromHeight, float toWidth, float toHeight) {
-            mToHeight = busqueda_layout.getHeight();
-            mToWidth = busqueda_layout.getWidth();
-            mFromHeight = fromHeight;
-            mFromWidth = busqueda_layout.getWidth();
-            mView = v;
-            setDuration(700);
-        }
-
-        @Override
-        protected void applyTransformation(float interpolatedTime, Transformation t) {
-            RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
-                    RelativeLayout.LayoutParams.MATCH_PARENT,
-                    RelativeLayout.LayoutParams.MATCH_PARENT);
-
-            layoutParams.setMargins(0, 0, 0, 0);
-            mView.setLayoutParams(layoutParams);
-
-            float height = (mToHeight - mFromHeight) * interpolatedTime + mFromHeight;
-            float width = (mToWidth - mFromWidth) * interpolatedTime + mFromWidth;
-            ViewGroup.LayoutParams p = mView.getLayoutParams();
-            p.height = (int) height;
-            p.width = (int) width;
-            mView.requestLayout();
-        }
-    }
-
 
     public void initTransitionVoicequery() {
-        int colorFrom = Color.parseColor("#ffffff");
-        int colorTo = Color.parseColor("#1e88e5");
+        int colorFrom = getResources().getColor(R.color.bg_white_content);
+        int colorTo = getResources().getColor(R.color.bg_input_busqueda);
 
         ColorTransitionVoicequery = ValueAnimator.ofObject(new ArgbEvaluator(), colorFrom, colorTo);
-        ColorTransitionVoicequery.setDuration(750);
+        ColorTransitionVoicequery.setDuration(350);
 
         ColorTransitionVoicequery.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
@@ -249,36 +216,10 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
             public void onClick(View view) {
                 if ((Boolean) input_btn_voice.getTag()) {
                     initSpeechActions();
-//                    moveButtonDown(input_btn_voice);
-//                    voiceActionAnimation(layout_input);
-
-
-/*                    Animation a = new Animation() {
-
-                        @Override
-                        protected void applyTransformation(float interpolatedTime, Transformation t) {
-                            RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) layout_input.getLayoutParams();
-                            params.leftMargin = (int) (0 * interpolatedTime);
-                            params.topMargin = (int) (0 * interpolatedTime);
-                            params.rightMargin = (int) (0 * interpolatedTime);
-                            params.bottomMargin = (int) (0 * interpolatedTime);
-                            layout_input.setLayoutParams(params);
-                        }
-                    };
-                    a.setDuration(500); // in ms
-                    layout_input.startAnimation(a);
-
-
-                    ResizeAnimation ra = new ResizeAnimation(layout_input, 0, 0, 500, 500);
-                    layout_input.startAnimation(ra);*/
-
-
                     ColorTransitionVoicequery.start();
-
-
                     txt_queryvoice.setVisibility(View.VISIBLE);
                 } else {
-                    txt_queryvoice.setVisibility(View.INVISIBLE);
+                    txt_queryvoice.setVisibility(View.GONE);
                     sr.destroy();
                     setMicOn();
                 }
@@ -295,12 +236,28 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
         });
 
 
-//        input_query.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                new AdapterAPI(getApplicationContext(), 0, input_query.getText().toString(), txt_resultado);
-//            }
-//        });
+        input_query.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (!(Boolean) input_btn_voice.getTag()) {
+                    txt_queryvoice.setVisibility(View.GONE);
+                    sr.destroy();
+                    setMicOn();
+                }
+            }
+        });
+
+        input_query.setOnEditorActionListener(new EditText.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                    new AdapterAPI(getApplicationContext(), 0, input_query.getText().toString(), txt_resultado);
+                    return true;
+                }
+
+                return false;
+            }
+        });
 //
 //        btn_mic.setOnClickListener(new View.OnClickListener() {
 //            @Override
@@ -376,16 +333,16 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
     public void setMicOn() {
         input_btn_voice.setTag(new Boolean(true));
         txt_queryvoice.setText(getString(infoText[0]));
-        txt_queryvoice.setVisibility(View.INVISIBLE);
+        txt_queryvoice.setVisibility(View.GONE);
         input_btn_voice.setImageResource(R.drawable.ic_mic_white_24dp);
         sr.destroy();
         ColorTransitionVoicequery.reverse();
     }
 
     public void setMicOff() {
+        hideSoftKeyboard();
         txt_queryvoice.setVisibility(View.VISIBLE);
         input_btn_voice.setTag(new Boolean(false));
-        hideSoftKeyboard();
         input_btn_voice.setImageResource(R.drawable.ic_mic_off_white_24dp);
     }
 }

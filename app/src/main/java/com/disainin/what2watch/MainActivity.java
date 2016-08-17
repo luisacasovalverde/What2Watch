@@ -167,7 +167,6 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnFr
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.toolbar_menu, menu);
         return true;
     }
@@ -176,14 +175,12 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnFr
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_search:
-                Intent buscar = new Intent(this, BuscarActivity.class);
-                startActivity(buscar);
+                startActivity(new Intent(this, BuscarActivity.class));
                 this.overridePendingTransition(R.animator.pull_right, R.animator.push_left);
                 return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
-
 
 }

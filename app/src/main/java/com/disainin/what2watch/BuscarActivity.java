@@ -7,6 +7,7 @@ import android.graphics.Typeface;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -20,6 +21,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class BuscarActivity extends AppCompatActivity implements RecognitionListener {
 
@@ -250,10 +252,12 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
         input_query.setOnEditorActionListener(new EditText.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                    new AdapterAPI(getApplicationContext(), 0, input_query.getText().toString(), txt_resultado);
+                if (actionId == EditorInfo.IME_ACTION_SEARCH && !v.getText().toString().equals("")) {
+                    new AdapterAPI(getApplicationContext(), 0, v.getText().toString(), txt_resultado);
                     return true;
                 }
+//                    Snackbar.make(v, "Esto es una prueba", Snackbar.LENGTH_LONG).show();
+
 
                 return false;
             }

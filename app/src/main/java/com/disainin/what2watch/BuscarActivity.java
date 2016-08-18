@@ -218,8 +218,7 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
             public void onClick(View view) {
                 if ((Boolean) input_btn_voice.getTag()) {
                     initSpeechActions();
-                    ColorTransitionVoicequery.start();
-                    txt_queryvoice.setVisibility(View.VISIBLE);
+                    setMicOff();
                 } else {
                     txt_queryvoice.setVisibility(View.GONE);
                     sr.destroy();
@@ -287,7 +286,6 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
 
     @Override
     public void onReadyForSpeech(Bundle bundle) {
-        setMicOff();
         txt_queryvoice.setText(getString(infoText[1]));
     }
 
@@ -344,6 +342,7 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
     }
 
     public void setMicOff() {
+        ColorTransitionVoicequery.start();
         hideSoftKeyboard();
         txt_queryvoice.setVisibility(View.VISIBLE);
         input_btn_voice.setTag(new Boolean(false));

@@ -2,34 +2,34 @@ package com.disainin.what2watch;
 
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.Transformation;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 public class BuscarActivity extends AppCompatActivity implements RecognitionListener {
 
     private ValueAnimator ColorTransitionVoicequery;
-    private RelativeLayout busqueda_layout, layout_input;
+    private ScrollView layout_container;
+    private RelativeLayout layout_busqueda, layout_input;
     private EditText input_query;
     private TextView txt_resultado, txt_queryvoice;
-    private ImageButton input_btn_voice, btn_back;
+    private ImageButton input_btn_voice, btn_back, input_btn_clear;
     private SpeechRecognizer sr;
     private final int[] infoText = new int[]{
             R.string.bv_vacio, //0
@@ -43,29 +43,9 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_buscar);
 
-//        initToolbar();
-
         cargarViews();
         loadActions();
-
     }
-
-/*    public void initToolbar() {
-        toolbar = (Toolbar) findViewById(R.id.toolbar_busqueda);
-        setSupportActionBar(toolbar);
-
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
-
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                onBackPressed();
-            }
-        });
-    }*/
-
 
     private void initSpeechActions() {
         sr = SpeechRecognizer.createSpeechRecognizer(getApplicationContext());
@@ -81,18 +61,24 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
         finish();
     }
 
-    public void hideSoftKeyboard() {
+    private void hideSoftKeyboard() {
         if (getCurrentFocus() != null) {
             InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
             inputMethodManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
         }
     }
 
+    private void showSoftKeyboard() {
+        InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        inputMethodManager.showSoftInput(input_query, InputMethodManager.SHOW_IMPLICIT);
+    }
+
     public void cargarViews() {
 //        Typeface fontawesome = Typeface.createFromAsset(getAssets(), "fonts/fontawesome-webfont.ttf");
         Typeface font_roboto_thin = Typeface.createFromAsset(getAssets(), "fonts/Roboto-Thin.ttf");
 
-        busqueda_layout = (RelativeLayout) findViewById(R.id.busqueda_layout);
+        layout_container = (ScrollView) findViewById(R.id.layout_container);
+        layout_busqueda = (RelativeLayout) findViewById(R.id.layout_busqueda);
         layout_input = (RelativeLayout) findViewById(R.id.layout_input);
         txt_resultado = (TextView) findViewById(R.id.txt_resultado);
 
@@ -100,95 +86,13 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
         txt_queryvoice.setTypeface(font_roboto_thin);
 
         input_query = (EditText) findViewById(R.id.busqueda_input_query);
+        input_query.clearFocus();
+
         input_btn_voice = (ImageButton) findViewById(R.id.busqueda_input_btn_voice);
+        input_btn_clear = (ImageButton) findViewById(R.id.busqueda_input_btn_clear);
 
         btn_back = (ImageButton) findViewById(R.id.busqueda_btn_back);
-
-
-//        Animation hyperspaceJump = AnimationUtils.loadAnimation(this, R.anim.hyperspace_jump);
-//        input_btn_voice.startAnimation(hyperspaceJump);
-
-
-//
-//        input_pelicula = (EditText) findViewById(R.id.input_pelicula);
-//
-//        btn_mic = (Button) findViewById(R.id.btnSpeak);
-//        btn_mic.setTypeface(fontawesome);
-//
-//        vistas = new TextView[]{
-//                txt_resultado,
-//                input_pelicula
-//        };
-//
-//
-//        layout_base = (RelativeLayout) findViewById(R.id.layout_base);
-
-
-
-
-
-/*        input_query.setOnTouchListener(new View.OnTouchListener() {
-
-            private float touchX = 0;
-
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                int drawableLeft = input_query.getRight() - input_query.getCompoundDrawables()[2].getBounds().width();
-                // This detects the location of touch on ACTION_DOWN, but because it is
-                // using getRawX() and getRight() and the EditText's parent is not at the
-                // left of the screen, it will respond when clicked in the middle of the
-                // EditText. Instead, use getX() and EditText.getWidth()
-                if (event.getAction() == MotionEvent.ACTION_DOWN && event.getRawX() >= drawableLeft) {
-                    touchX = event.getRawX();
-                    return true;
-                } else if (event.getAction() == MotionEvent.ACTION_UP && touchX >= drawableLeft) {
-
-
-//                    Toast.makeText(getApplicationContext(), "Clicked Button", Toast.LENGTH_SHORT).show();
-
-                    new BusquedaVoz(getApplicationContext(), txt_queryvoice, input_query);
-
-
-                    touchX = 0;
-                    return true;
-                } else {
-                    return input_query.onTouchEvent(event);
-                }
-            }
-        });*/
-
-
     }
-
-
-/*    public void voiceActionAnimation(final View v) {
-        TranslateAnimation anim = new TranslateAnimation(0, 0, 0, layout_input.getLayoutParams().height);
-        anim.setDuration(750);
-
-        anim.setAnimationListener(new TranslateAnimation.AnimationListener() {
-
-            @Override
-            public void onAnimationStart(Animation animation) {
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-            }
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-//                RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) view.getLayoutParams();
-//                params.bottomMargin += -100;
-//
-//                view.setLayoutParams(params);
-//                busqueda_layout.setBackgroundColor(Color.parseColor("#002775"));
-                animation.setFillAfter(true);
-//                animation.reset();
-            }
-        });
-
-        v.startAnimation(anim);
-    }*/
 
 
     public void initTransitionVoicequery() {
@@ -201,11 +105,18 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
         ColorTransitionVoicequery.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animator) {
-                busqueda_layout.setBackgroundColor((int) animator.getAnimatedValue());
-
+                layout_busqueda.setBackgroundColor((int) animator.getAnimatedValue());
             }
-
         });
+    }
+
+    private void setInputQueryLayout(int rightElement) {
+        final RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        params.addRule(RelativeLayout.LEFT_OF, rightElement);
+        params.addRule(RelativeLayout.START_OF, rightElement);
+        params.addRule(RelativeLayout.RIGHT_OF, R.id.busqueda_btn_back);
+        params.addRule(RelativeLayout.END_OF, R.id.busqueda_btn_back);
+        input_query.setLayoutParams(params);
     }
 
 
@@ -220,11 +131,8 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
                     initSpeechActions();
                     setMicOff();
                 } else {
-                    txt_queryvoice.setVisibility(View.GONE);
-                    sr.destroy();
                     setMicOn();
                 }
-
             }
         });
 
@@ -240,6 +148,9 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
         input_query.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                view.setFocusableInTouchMode(true);
+                showSoftKeyboard();
+
                 if (!(Boolean) input_btn_voice.getTag()) {
                     txt_queryvoice.setVisibility(View.GONE);
                     sr.destroy();
@@ -255,34 +166,67 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
                     new AdapterAPI(getApplicationContext(), 0, v.getText().toString(), txt_resultado);
                     return true;
                 }
+
+
+//                Toast.makeText(getApplicationContext(), "BIEN!", Toast.LENGTH_SHORT).show();
+
 //                    Snackbar.make(v, "Esto es una prueba", Snackbar.LENGTH_LONG).show();
 
 
                 return false;
             }
         });
-//
-//        btn_mic.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                new BusquedaVoz(getApplicationContext(), txt_queryvoice, input_pelicula);
-//            }
-//        });
-//
-//        layout_base.setOnTouchListener(new View.OnTouchListener() {
-//            @Override
-//            public boolean onTouch(View view, MotionEvent motionEvent) {
-//                if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-//                    if (input_pelicula.isFocused()) {
-//                        input_pelicula.clearFocus();
-//                        hideSoftKeyboard();
-//                    }
-//                }
-//                return false;
-//            }
-//        });
+
+        input_btn_clear.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                input_query.setText("");
+            }
+        });
+
+        input_query.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (before == 0) {
+                    input_btn_voice.setVisibility(View.GONE);
+                    setInputQueryLayout(R.id.busqueda_input_btn_clear);
+                    input_btn_clear.setVisibility(View.VISIBLE);
+                } else if (count == 0) {
+                    setClearOff();
+                }
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+
+
+        layout_container.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                    if (input_query.isFocused()) {
+                        input_query.clearFocus();
+                        hideSoftKeyboard();
+                        setClearOff();
+                    }
+                }
+                return false;
+            }
+        });
     }
 
+    private void setClearOff() {
+        input_query.setFocusable(false);
+        input_btn_clear.setVisibility(View.GONE);
+        setInputQueryLayout(R.id.busqueda_input_btn_voice);
+        input_btn_voice.setVisibility(View.VISIBLE);
+    }
 
     @Override
     public void onReadyForSpeech(Bundle bundle) {
@@ -332,7 +276,8 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
 
     }
 
-    public void setMicOn() {
+    private void setMicOn() {
+        setClearOff();
         input_btn_voice.setTag(new Boolean(true));
         txt_queryvoice.setText(getString(infoText[0]));
         txt_queryvoice.setVisibility(View.GONE);
@@ -341,7 +286,7 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
         ColorTransitionVoicequery.reverse();
     }
 
-    public void setMicOff() {
+    private void setMicOff() {
         ColorTransitionVoicequery.start();
         hideSoftKeyboard();
         txt_queryvoice.setVisibility(View.VISIBLE);

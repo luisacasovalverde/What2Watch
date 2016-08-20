@@ -315,7 +315,6 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
 
     @Override
     public void onError(int i) {
-        Toast.makeText(BuscarActivity.this, "Error: " + i + " - " + SpeechRecognizer.ERROR_SPEECH_TIMEOUT, Toast.LENGTH_SHORT).show();
         setMicOn();
     }
 

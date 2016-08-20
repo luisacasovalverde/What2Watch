@@ -1,11 +1,16 @@
 package com.disainin.what2watch;
 
+import android.Manifest;
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
+import android.app.Activity;
+import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
@@ -24,6 +29,7 @@ import android.widget.Toast;
 
 public class BuscarActivity extends AppCompatActivity implements RecognitionListener {
 
+    private boolean clear = true;
     private ValueAnimator ColorTransitionVoicequery;
     private ScrollView layout_container;
     private RelativeLayout layout_busqueda, layout_input;
@@ -48,9 +54,11 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
     }
 
     private void initSpeechActions() {
-        sr = SpeechRecognizer.createSpeechRecognizer(getApplicationContext());
-        sr.setRecognitionListener(this);
-        sr.startListening(RecognizerIntent.getVoiceDetailsIntent(getApplicationContext()));
+        if (SpeechRecognizer.isRecognitionAvailable(getApplicationContext())) {
+            sr = SpeechRecognizer.createSpeechRecognizer(getApplicationContext());
+            sr.setRecognitionListener(this);
+            sr.startListening(RecognizerIntent.getVoiceDetailsIntent(getApplicationContext()));
+        }
     }
 
 
@@ -60,6 +68,36 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
         overridePendingTransition(R.animator.pull_left, R.animator.push_right);
         finish();
     }
+
+/*    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+
+        Toast.makeText(BuscarActivity.this, "" + requestCode, Toast.LENGTH_SHORT).show();
+*//*
+        switch (requestCode) {
+            case RECORD_AUDIO: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
+
+
+        // other 'case' lines to check for other
+        // permissions this app might request
+    }*//*
+
+    }*/
 
     private void hideSoftKeyboard() {
         if (getCurrentFocus() != null) {
@@ -89,6 +127,11 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
         input_query.clearFocus();
 
         input_btn_voice = (ImageButton) findViewById(R.id.busqueda_input_btn_voice);
+
+        if (!SpeechRecognizer.isRecognitionAvailable(getApplicationContext())) {
+            input_btn_voice.setVisibility(View.GONE);
+        }
+
         input_btn_clear = (ImageButton) findViewById(R.id.busqueda_input_btn_clear);
 
         btn_back = (ImageButton) findViewById(R.id.busqueda_btn_back);
@@ -151,6 +194,10 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
                 view.setFocusableInTouchMode(true);
                 showSoftKeyboard();
 
+                if (input_query.getText().length() > 0) {
+                    setClearOn();
+                }
+
                 if (!(Boolean) input_btn_voice.getTag()) {
                     txt_queryvoice.setVisibility(View.GONE);
                     sr.destroy();
@@ -164,6 +211,8 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_SEARCH && !v.getText().toString().equals("")) {
                     new AdapterAPI(getApplicationContext(), 0, v.getText().toString(), txt_resultado);
+                    hideSoftKeyboard();
+                    setClearOff();
                     return true;
                 }
 
@@ -188,9 +237,7 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (before == 0) {
-                    input_btn_voice.setVisibility(View.GONE);
-                    setInputQueryLayout(R.id.busqueda_input_btn_clear);
-                    input_btn_clear.setVisibility(View.VISIBLE);
+                    setClearOn();
                 } else if (count == 0) {
                     setClearOff();
                 }
@@ -221,11 +268,24 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
         });
     }
 
+
     private void setClearOff() {
+        setClear(true);
         input_query.setFocusable(false);
         input_btn_clear.setVisibility(View.GONE);
         setInputQueryLayout(R.id.busqueda_input_btn_voice);
-        input_btn_voice.setVisibility(View.VISIBLE);
+        if (SpeechRecognizer.isRecognitionAvailable(getApplicationContext())) {
+            input_btn_voice.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void setClearOn() {
+        setClear(false);
+        if (SpeechRecognizer.isRecognitionAvailable(getApplicationContext())) {
+            input_btn_voice.setVisibility(View.GONE);
+        }
+        setInputQueryLayout(R.id.busqueda_input_btn_clear);
+        input_btn_clear.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -255,6 +315,7 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
 
     @Override
     public void onError(int i) {
+        Toast.makeText(BuscarActivity.this, "Error: " + i + " - " + SpeechRecognizer.ERROR_SPEECH_TIMEOUT, Toast.LENGTH_SHORT).show();
         setMicOn();
     }
 
@@ -277,20 +338,32 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
     }
 
     private void setMicOn() {
-        setClearOff();
-        input_btn_voice.setTag(new Boolean(true));
-        txt_queryvoice.setText(getString(infoText[0]));
-        txt_queryvoice.setVisibility(View.GONE);
-        input_btn_voice.setImageResource(R.drawable.ic_mic_white_24dp);
-        sr.destroy();
-        ColorTransitionVoicequery.reverse();
+        if (SpeechRecognizer.isRecognitionAvailable(getApplicationContext())) {
+            setClearOff();
+            input_btn_voice.setTag(new Boolean(true));
+            txt_queryvoice.setText(getString(infoText[0]));
+            txt_queryvoice.setVisibility(View.GONE);
+            input_btn_voice.setImageResource(R.drawable.ic_mic_white_24dp);
+            sr.destroy();
+            ColorTransitionVoicequery.reverse();
+        }
     }
 
     private void setMicOff() {
-        ColorTransitionVoicequery.start();
-        hideSoftKeyboard();
-        txt_queryvoice.setVisibility(View.VISIBLE);
-        input_btn_voice.setTag(new Boolean(false));
-        input_btn_voice.setImageResource(R.drawable.ic_mic_off_white_24dp);
+        if (SpeechRecognizer.isRecognitionAvailable(getApplicationContext())) {
+            ColorTransitionVoicequery.start();
+            hideSoftKeyboard();
+            txt_queryvoice.setVisibility(View.VISIBLE);
+            input_btn_voice.setTag(new Boolean(false));
+            input_btn_voice.setImageResource(R.drawable.ic_mic_off_white_24dp);
+        }
+    }
+
+    public boolean isClear() {
+        return clear;
+    }
+
+    public void setClear(boolean clear) {
+        this.clear = clear;
     }
 }

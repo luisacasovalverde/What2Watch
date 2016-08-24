@@ -1,16 +1,11 @@
 package com.disainin.what2watch;
 
-import android.Manifest;
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
-import android.app.Activity;
-import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
@@ -25,11 +20,11 @@ import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class BuscarActivity extends AppCompatActivity implements RecognitionListener {
 
     private boolean clear = true;
+    private String lastQuery = "";
     private ValueAnimator ColorTransitionVoicequery;
     private ScrollView layout_container;
     private RelativeLayout layout_busqueda, layout_input;
@@ -108,7 +103,7 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
 
     private void showSoftKeyboard() {
         InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-        inputMethodManager.showSoftInput(input_query, InputMethodManager.SHOW_IMPLICIT);
+        inputMethodManager.showSoftInput(input_query, InputMethodManager.SHOW_FORCED);
     }
 
     public void cargarViews() {
@@ -124,7 +119,6 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
         txt_queryvoice.setTypeface(font_roboto_thin);
 
         input_query = (EditText) findViewById(R.id.busqueda_input_query);
-        input_query.clearFocus();
 
         input_btn_voice = (ImageButton) findViewById(R.id.busqueda_input_btn_voice);
 
@@ -173,8 +167,10 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
                 if ((Boolean) input_btn_voice.getTag()) {
                     initSpeechActions();
                     setMicOff();
+                    input_query.setText("");
                 } else {
                     setMicOn();
+                    input_query.setText(lastQuery);
                 }
             }
         });
@@ -211,8 +207,8 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_SEARCH && !v.getText().toString().equals("")) {
                     new AdapterAPI(getApplicationContext(), 0, v.getText().toString(), txt_resultado);
-                    hideSoftKeyboard();
-                    setClearOff();
+                    lastQuery = v.getText().toString();
+                    setClearOffAndKeyboard();
                     return true;
                 }
 
@@ -236,7 +232,7 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
         input_query.addTextChangedListener(new TextWatcher() {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (before == 0) {
+                if (before == 1) {
                     setClearOn();
                 } else if (count == 0) {
                     setClearOff();
@@ -258,20 +254,25 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
                     if (input_query.isFocused()) {
-                        input_query.clearFocus();
-                        hideSoftKeyboard();
-                        setClearOff();
+                        setClearOffAndKeyboard();
                     }
                 }
                 return false;
             }
         });
+
+    }
+
+
+    private void setClearOffAndKeyboard() {
+        hideSoftKeyboard();
+        input_query.setFocusable(false);
+        setClearOff();
     }
 
 
     private void setClearOff() {
         setClear(true);
-        input_query.setFocusable(false);
         input_btn_clear.setVisibility(View.GONE);
         setInputQueryLayout(R.id.busqueda_input_btn_voice);
         if (SpeechRecognizer.isRecognitionAvailable(getApplicationContext())) {
@@ -315,6 +316,7 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
 
     @Override
     public void onError(int i) {
+        setClearOff();
         setMicOn();
     }
 
@@ -322,8 +324,10 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
     public void onResults(Bundle bundle) {
         input_query.setText(bundle.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION).get(0));
         input_query.setSelection(input_query.getText().length());
+        setClearOff();
         setMicOn();
         new AdapterAPI(getApplicationContext(), 0, bundle.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION).get(0), txt_resultado);
+        lastQuery = bundle.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION).get(0);
     }
 
     @Override
@@ -338,7 +342,6 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
 
     private void setMicOn() {
         if (SpeechRecognizer.isRecognitionAvailable(getApplicationContext())) {
-            setClearOff();
             input_btn_voice.setTag(new Boolean(true));
             txt_queryvoice.setText(getString(infoText[0]));
             txt_queryvoice.setVisibility(View.GONE);
@@ -351,7 +354,7 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
     private void setMicOff() {
         if (SpeechRecognizer.isRecognitionAvailable(getApplicationContext())) {
             ColorTransitionVoicequery.start();
-            hideSoftKeyboard();
+            setClearOffAndKeyboard();
             txt_queryvoice.setVisibility(View.VISIBLE);
             input_btn_voice.setTag(new Boolean(false));
             input_btn_voice.setImageResource(R.drawable.ic_mic_off_white_24dp);

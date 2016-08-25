@@ -10,6 +10,7 @@
     <string name="bv_escuchando">Escuchando...</string>
     <string name="bv_reconociendo">Reconociendo...</string>
     <string name="bv_error_desconexion">No hay conexión...</string>
+    <string name="bv_no_results">No hay resultados</string>
 
     <string name="fa_mic">&#xf130;</string>
     <string name="fa_search">&#xf002;</string>

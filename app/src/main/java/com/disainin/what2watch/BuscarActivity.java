@@ -2,7 +2,11 @@ package com.disainin.what2watch;
 
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
+import android.os.AsyncTask;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
@@ -17,9 +21,25 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+
+import com.squareup.picasso.Picasso;
+
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
+import info.movito.themoviedbapi.TmdbApi;
+import info.movito.themoviedbapi.TmdbSearch;
+import info.movito.themoviedbapi.model.MovieDb;
+import info.movito.themoviedbapi.model.Multi;
+import info.movito.themoviedbapi.model.people.Person;
+import info.movito.themoviedbapi.model.tv.TvSeries;
 
 public class BuscarActivity extends AppCompatActivity implements RecognitionListener {
 
@@ -31,6 +51,7 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
     private EditText input_query;
     private TextView txt_resultado, txt_queryvoice;
     private ImageButton input_btn_voice, btn_back, input_btn_clear;
+    private ImageView img_result;
     private SpeechRecognizer sr;
     private final int[] infoText = new int[]{
             R.string.bv_vacio, //0
@@ -47,6 +68,100 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
         cargarViews();
         loadActions();
     }
+
+
+/*    private class SearchMovieTaskTMDBAPI extends AsyncTask<Void, Void, MovieDb> {
+
+        private int code;
+
+        public SearchMovieTaskTMDBAPI(int code) {
+            this.code = code;
+        }
+
+        protected MovieDb doInBackground(Void... v) {
+            TmdbMovies movies = new TmdbApi("1947a2516ec6cb3cf97ef1da21fdaa87").getMovies();
+            return movies.getMovie(getCode(), "es");
+        }
+
+        protected void onPostExecute(MovieDb movie) {
+            txt_resultado.append(movie.getTitle() + " (" + movie.getReleaseDate() + ")- " + movie.getVoteAverage() + "\n");
+        }
+
+        public int getCode() {
+            return code;
+        }
+    }*/
+
+    public static Drawable LoadImageFromWebOperations(String url) {
+        try {
+            InputStream is = (InputStream) new URL(url).getContent();
+            Drawable d = Drawable.createFromStream(is, "src name");
+            return d;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+
+    private class SearchTaskTMDBAPI extends AsyncTask<Void, Void, List<Multi>> {
+
+        private String query;
+
+        public SearchTaskTMDBAPI(String query) {
+            this.query = query;
+        }
+
+        protected List<Multi> doInBackground(Void... v) {
+            TmdbSearch r = new TmdbApi("1947a2516ec6cb3cf97ef1da21fdaa87").getSearch();
+            return r.searchMulti(getQuery(), "es", 1).getResults();
+        }
+
+        protected void onPostExecute(List<Multi> results) {
+            txt_resultado.setText("");
+
+            Collections.sort(results, new Comparator<Multi>() {
+                @Override
+                public int compare(Multi emp1, Multi emp2) {
+                    return emp1.getMediaType().compareTo(emp2.getMediaType());
+                }
+            });
+
+            if (results.size() > 0) {
+                for (Multi item : results) {
+                    switch (item.getMediaType().ordinal()) {
+                        case 0:
+                            MovieDb movie = (MovieDb) item;
+
+                            txt_resultado.append(movie.getTitle() + " (" + movie.getReleaseDate() + ") - " + movie.getVoteAverage());
+                            txt_resultado.append("\n\n");
+                            if (movie.getPosterPath() != null) {
+                                Picasso.with(getApplicationContext()).load("https://image.tmdb.org/t/p/w300_and_h450_bestv2" + movie.getPosterPath()).into(img_result);
+                            }
+
+                            break;
+                        case 1:
+                            Person person = (Person) item;
+                            txt_resultado.append(person.getName() + "\n\n");
+
+                            break;
+                        case 2:
+                            TvSeries serie = (TvSeries) item;
+//                        if (serie.getVoteCount() > 0) {
+                            txt_resultado.append(serie.getName() + " (" + serie.getFirstAirDate() + " - " + serie.getLastAirDate() + ") - " + serie.getVoteAverage() + "\n\n");
+//                        }
+                            break;
+                    }
+                }
+            } else {
+                txt_resultado.setText(getString(R.string.bv_no_results));
+            }
+        }
+
+        public String getQuery() {
+            return query;
+        }
+    }
+
 
     private void initSpeechActions() {
         if (SpeechRecognizer.isRecognitionAvailable(getApplicationContext())) {
@@ -129,6 +244,8 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
         input_btn_clear = (ImageButton) findViewById(R.id.busqueda_input_btn_clear);
 
         btn_back = (ImageButton) findViewById(R.id.busqueda_btn_back);
+
+        img_result = (ImageView) findViewById(R.id.img_result);
     }
 
 
@@ -155,7 +272,6 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
         params.addRule(RelativeLayout.END_OF, R.id.busqueda_btn_back);
         input_query.setLayoutParams(params);
     }
-
 
     public void loadActions() {
         initTransitionVoicequery();
@@ -206,7 +322,9 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_SEARCH && !v.getText().toString().equals("")) {
-                    new AdapterAPI(getApplicationContext(), 0, v.getText().toString(), txt_resultado);
+
+                    new SearchTaskTMDBAPI(v.getText().toString()).execute();
+
                     lastQuery = v.getText().toString();
                     setClearOffAndKeyboard();
                     return true;
@@ -326,7 +444,9 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
         input_query.setSelection(input_query.getText().length());
         setClearOff();
         setMicOn();
-        new AdapterAPI(getApplicationContext(), 0, bundle.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION).get(0), txt_resultado);
+
+        new SearchTaskTMDBAPI(bundle.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION).get(0)).execute();
+
         lastQuery = bundle.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION).get(0);
     }
 

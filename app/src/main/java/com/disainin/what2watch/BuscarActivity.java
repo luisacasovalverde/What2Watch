@@ -2,16 +2,16 @@ package com.disainin.what2watch;
 
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
@@ -26,19 +26,15 @@ import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import com.squareup.picasso.Picasso;
-
-import java.io.InputStream;
-import java.net.URL;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 
 import info.movito.themoviedbapi.TmdbApi;
 import info.movito.themoviedbapi.TmdbSearch;
 import info.movito.themoviedbapi.model.MovieDb;
 import info.movito.themoviedbapi.model.Multi;
-import info.movito.themoviedbapi.model.people.Person;
 import info.movito.themoviedbapi.model.tv.TvSeries;
 
 public class BuscarActivity extends AppCompatActivity implements RecognitionListener {
@@ -59,6 +55,8 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
             R.string.bv_reconociendo, //2
             R.string.bv_error_desconexion, //3
     };
+    private RecyclerView recyclerview_buscar;
+    private MultiAdapter mAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,16 +90,6 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
         }
     }*/
 
-    public static Drawable LoadImageFromWebOperations(String url) {
-        try {
-            InputStream is = (InputStream) new URL(url).getContent();
-            Drawable d = Drawable.createFromStream(is, "src name");
-            return d;
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
 
     private class SearchTaskTMDBAPI extends AsyncTask<Void, Void, List<Multi>> {
 
@@ -117,44 +105,53 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
         }
 
         protected void onPostExecute(List<Multi> results) {
-            txt_resultado.setText("");
 
             Collections.sort(results, new Comparator<Multi>() {
                 @Override
-                public int compare(Multi emp1, Multi emp2) {
-                    return emp1.getMediaType().compareTo(emp2.getMediaType());
+                public int compare(Multi i1, Multi i2) {
+                    return i1.getMediaType().compareTo(i2.getMediaType());
                 }
             });
 
-            if (results.size() > 0) {
-                for (Multi item : results) {
-                    switch (item.getMediaType().ordinal()) {
-                        case 0:
-                            MovieDb movie = (MovieDb) item;
 
-                            txt_resultado.append(movie.getTitle() + " (" + movie.getReleaseDate() + ") - " + movie.getVoteAverage());
-                            txt_resultado.append("\n\n");
-                            if (movie.getPosterPath() != null) {
-                                Picasso.with(getApplicationContext()).load("https://image.tmdb.org/t/p/w300_and_h450_bestv2" + movie.getPosterPath()).into(img_result);
-                            }
+            Iterator<Multi> i = results.iterator();
+            while (i.hasNext()) {
+                Multi item = i.next();
 
-                            break;
-                        case 1:
-                            Person person = (Person) item;
-                            txt_resultado.append(person.getName() + "\n\n");
+                switch (item.getMediaType().ordinal()) {
+                    case 0:
+                        MovieDb movie = (MovieDb) item;
+                        if ((movie.getReleaseDate() == null || movie.getReleaseDate().equals("")) || (movie.getPosterPath() == null || movie.getPosterPath() == "")) {
+                            i.remove();
+                        }
 
-                            break;
-                        case 2:
-                            TvSeries serie = (TvSeries) item;
-//                        if (serie.getVoteCount() > 0) {
-                            txt_resultado.append(serie.getName() + " (" + serie.getFirstAirDate() + " - " + serie.getLastAirDate() + ") - " + serie.getVoteAverage() + "\n\n");
-//                        }
-                            break;
-                    }
+                        break;
+                    case 1:
+//                        Person person = (Person) item;
+                        i.remove();
+                        break;
+                    case 2:
+                        TvSeries serie = (TvSeries) item;
+                        if ((serie.getFirstAirDate() == null || serie.getFirstAirDate().equals("")) || (serie.getPosterPath() == null || serie.getPosterPath() == "")) {
+                            i.remove();
+                        }
+                        break;
                 }
-            } else {
-                txt_resultado.setText(getString(R.string.bv_no_results));
+
+
             }
+
+
+//            if (results != null) {
+            if (results.size() > 0) {
+                mAdapter = new MultiAdapter(results);
+                recyclerview_buscar.setAdapter(mAdapter);
+                mAdapter.notifyDataSetChanged();
+            }
+//            } else {
+//                Toast.makeText(getApplicationContext(), "No hay conexión", Toast.LENGTH_SHORT).show();
+//            }
+
         }
 
         public String getQuery() {
@@ -175,6 +172,7 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
     @Override
     public void onBackPressed() {
         super.onBackPressed();
+        safeDestroySR();
         overridePendingTransition(R.animator.pull_left, R.animator.push_right);
         finish();
     }
@@ -225,10 +223,8 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
 //        Typeface fontawesome = Typeface.createFromAsset(getAssets(), "fonts/fontawesome-webfont.ttf");
         Typeface font_roboto_thin = Typeface.createFromAsset(getAssets(), "fonts/Roboto-Thin.ttf");
 
-        layout_container = (ScrollView) findViewById(R.id.layout_container);
         layout_busqueda = (RelativeLayout) findViewById(R.id.layout_busqueda);
         layout_input = (RelativeLayout) findViewById(R.id.layout_input);
-        txt_resultado = (TextView) findViewById(R.id.txt_resultado);
 
         txt_queryvoice = (TextView) findViewById(R.id.txt_queryvoice);
         txt_queryvoice.setTypeface(font_roboto_thin);
@@ -245,7 +241,11 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
 
         btn_back = (ImageButton) findViewById(R.id.busqueda_btn_back);
 
-        img_result = (ImageView) findViewById(R.id.img_result);
+        recyclerview_buscar = (RecyclerView) findViewById(R.id.recycler_view);
+        LinearLayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
+        recyclerview_buscar.setLayoutManager(mLayoutManager);
+        recyclerview_buscar.setItemAnimator(new DefaultItemAnimator());
+
     }
 
 
@@ -367,7 +367,7 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
         });
 
 
-        layout_container.setOnTouchListener(new View.OnTouchListener() {
+        recyclerview_buscar.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
@@ -468,16 +468,24 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
             input_btn_voice.setImageResource(R.drawable.ic_mic_white_24dp);
             sr.destroy();
             ColorTransitionVoicequery.reverse();
+            recyclerview_buscar.setVisibility(View.VISIBLE);
         }
     }
 
     private void setMicOff() {
         if (SpeechRecognizer.isRecognitionAvailable(getApplicationContext())) {
+            recyclerview_buscar.setVisibility(View.GONE);
             ColorTransitionVoicequery.start();
             setClearOffAndKeyboard();
             txt_queryvoice.setVisibility(View.VISIBLE);
             input_btn_voice.setTag(new Boolean(false));
             input_btn_voice.setImageResource(R.drawable.ic_mic_off_white_24dp);
+        }
+    }
+
+    private void safeDestroySR() {
+        if (!(Boolean) input_btn_voice.getTag()) {
+            setMicOn();
         }
     }
 

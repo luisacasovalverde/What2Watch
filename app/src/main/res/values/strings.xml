@@ -21,4 +21,5 @@
     <string name="search_hint">Busca películas, series o personas</string>
     <string name="attr_img_voice_query">Buscar por voz</string>
     <string name="attr_img_back">Ir atrás</string>
+    <string name="attr_img_multi_item">Ir atrás</string>
 </resources>

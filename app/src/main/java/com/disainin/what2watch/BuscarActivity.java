@@ -1,12 +1,19 @@
 package com.disainin.what2watch;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
+import android.content.Context;
+import android.graphics.Color;
 import android.graphics.Typeface;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -25,6 +32,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -42,12 +50,10 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
     private boolean clear = true;
     private String lastQuery = "";
     private ValueAnimator ColorTransitionVoicequery;
-    private ScrollView layout_container;
-    private RelativeLayout layout_busqueda, layout_input;
+    private RelativeLayout layout_busqueda, layout_input, recyclerview_buscar_item, layout_loading_buscar;
     private EditText input_query;
-    private TextView txt_resultado, txt_queryvoice;
+    private TextView txt_queryvoice;
     private ImageButton input_btn_voice, btn_back, input_btn_clear;
-    private ImageView img_result;
     private SpeechRecognizer sr;
     private final int[] infoText = new int[]{
             R.string.bv_vacio, //0
@@ -57,13 +63,14 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
     };
     private RecyclerView recyclerview_buscar;
     private MultiAdapter mAdapter;
+    private int totalPagesResults = 0, actualPageResults;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_buscar);
 
-        cargarViews();
+        loadViews();
         loadActions();
     }
 
@@ -90,72 +97,129 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
         }
     }*/
 
+    protected boolean isNetworkConnected() {
+        try {
+            ConnectivityManager mConnectivityManager = (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo mNetworkInfo = mConnectivityManager.getActiveNetworkInfo();
+            return mNetworkInfo != null;
+        } catch (NullPointerException e) {
+            return false;
+        }
+    }
 
-    private class SearchTaskTMDBAPI extends AsyncTask<Void, Void, List<Multi>> {
+    private class SearchTaskTMDBAPI extends AsyncTask<String, Integer, List<Multi>> {
 
-        private String query;
-
-        public SearchTaskTMDBAPI(String query) {
-            this.query = query;
+        @Override
+        protected void onPreExecute() {
+//            layout_loading_buscar.setVisibility(View.VISIBLE);
+            layout_loading_buscar.animate()
+                    .alpha(1.0f)
+                    .setDuration(150)
+                    .setListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            super.onAnimationEnd(animation);
+                            layout_loading_buscar.setVisibility(View.VISIBLE);
+                        }
+                    });
         }
 
-        protected List<Multi> doInBackground(Void... v) {
-            TmdbSearch r = new TmdbApi("1947a2516ec6cb3cf97ef1da21fdaa87").getSearch();
-            return r.searchMulti(getQuery(), "es", 1).getResults();
+        protected List<Multi> doInBackground(String... query) {
+            try {
+                TmdbSearch r = new TmdbApi("1947a2516ec6cb3cf97ef1da21fdaa87").getSearch();
+                TmdbSearch.MultiListResultsPage todo = r.searchMulti(query[0], "es", getActualPageResults());
+                todo.getTotalPages();
+
+
+                Iterator<Multi> i = todo.iterator();
+                while (i.hasNext()) {
+                    Multi item = i.next();
+
+                    switch (item.getMediaType().ordinal()) {
+                        case 0:
+                            MovieDb movie = (MovieDb) item;
+                            if ((movie.getReleaseDate() == null || movie.getReleaseDate().equals(""))
+                                    || (movie.getPosterPath() == null || movie.getPosterPath().equals(""))
+                                    || movie.getVoteAverage() == 0) {
+                                i.remove();
+                            }
+
+                            break;
+                        case 1:
+//                        Person person = (Person) item;
+                            i.remove();
+                            break;
+                        case 2:
+                            TvSeries serie = (TvSeries) item;
+                            if ((serie.getFirstAirDate() == null || serie.getFirstAirDate().equals(""))
+                                    || (serie.getPosterPath() == null || serie.getPosterPath().equals(""))
+                                    || serie.getVoteAverage() == 0) {
+                                i.remove();
+                            }
+                            break;
+                    }
+
+
+                }
+
+
+                return todo.getResults();
+//                return r.searchMulti(query[0], "es", 1).getResults();
+            } catch (RuntimeException e) {
+                if (!isNetworkConnected()) {
+                    Snackbar snackbar = Snackbar
+                            .make(layout_busqueda, getString(R.string.general_no_connection), Snackbar.LENGTH_LONG)
+                            /*.setAction("OK", new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                }
+                            })*/;
+//                    snackbar.setActionTextColor(Color.WHITE);
+                    snackbar.show();
+                }
+
+                return null;
+            }
         }
 
         protected void onPostExecute(List<Multi> results) {
+            if (results != null) {
+                Collections.sort(results, new Comparator<Multi>() {
+                    @Override
+                    public int compare(Multi i1, Multi i2) {
+                        return i1.getMediaType().compareTo(i2.getMediaType());
+                    }
+                });
 
-            Collections.sort(results, new Comparator<Multi>() {
-                @Override
-                public int compare(Multi i1, Multi i2) {
-                    return i1.getMediaType().compareTo(i2.getMediaType());
+
+                if (results.size() > 0) {
+                    mAdapter = new MultiAdapter(results);
+                    recyclerview_buscar.setAdapter(mAdapter);
+                    mAdapter.notifyDataSetChanged();
+                } else {
+                    Snackbar snackbar = Snackbar
+                            .make(layout_busqueda, getString(R.string.search_no_results), Snackbar.LENGTH_LONG)
+                            /*.setAction("OK", new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                }
+                            })*/;
+//                    snackbar.setActionTextColor(Color.WHITE);
+                    snackbar.show();
                 }
-            });
-
-
-            Iterator<Multi> i = results.iterator();
-            while (i.hasNext()) {
-                Multi item = i.next();
-
-                switch (item.getMediaType().ordinal()) {
-                    case 0:
-                        MovieDb movie = (MovieDb) item;
-                        if ((movie.getReleaseDate() == null || movie.getReleaseDate().equals("")) || (movie.getPosterPath() == null || movie.getPosterPath() == "")) {
-                            i.remove();
-                        }
-
-                        break;
-                    case 1:
-//                        Person person = (Person) item;
-                        i.remove();
-                        break;
-                    case 2:
-                        TvSeries serie = (TvSeries) item;
-                        if ((serie.getFirstAirDate() == null || serie.getFirstAirDate().equals("")) || (serie.getPosterPath() == null || serie.getPosterPath() == "")) {
-                            i.remove();
-                        }
-                        break;
-                }
-
-
             }
 
-
-//            if (results != null) {
-            if (results.size() > 0) {
-                mAdapter = new MultiAdapter(results);
-                recyclerview_buscar.setAdapter(mAdapter);
-                mAdapter.notifyDataSetChanged();
-            }
-//            } else {
-//                Toast.makeText(getApplicationContext(), "No hay conexión", Toast.LENGTH_SHORT).show();
-//            }
-
-        }
-
-        public String getQuery() {
-            return query;
+            layout_loading_buscar.animate()
+                    .alpha(0.0f)
+                    .setDuration(150)
+                    .setListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            super.onAnimationEnd(animation);
+                            layout_loading_buscar.setVisibility(View.GONE);
+                        }
+                    });
+//                layout_loading_buscar.setVisibility(View.GONE);
         }
     }
 
@@ -219,7 +283,7 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
         inputMethodManager.showSoftInput(input_query, InputMethodManager.SHOW_FORCED);
     }
 
-    public void cargarViews() {
+    public void loadViews() {
 //        Typeface fontawesome = Typeface.createFromAsset(getAssets(), "fonts/fontawesome-webfont.ttf");
         Typeface font_roboto_thin = Typeface.createFromAsset(getAssets(), "fonts/Roboto-Thin.ttf");
 
@@ -246,6 +310,10 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
         recyclerview_buscar.setLayoutManager(mLayoutManager);
         recyclerview_buscar.setItemAnimator(new DefaultItemAnimator());
 
+        recyclerview_buscar.setAdapter(mAdapter);
+
+
+        layout_loading_buscar = (RelativeLayout) findViewById(R.id.layout_loading_buscar);
     }
 
 
@@ -267,16 +335,16 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
     private void setInputQueryLayout(int rightElement) {
         final RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         params.addRule(RelativeLayout.LEFT_OF, rightElement);
-        params.addRule(RelativeLayout.START_OF, rightElement);
+//        params.addRule(RelativeLayout.START_OF, rightElement);
         params.addRule(RelativeLayout.RIGHT_OF, R.id.busqueda_btn_back);
-        params.addRule(RelativeLayout.END_OF, R.id.busqueda_btn_back);
+//        params.addRule(RelativeLayout.END_OF, R.id.busqueda_btn_back);
         input_query.setLayoutParams(params);
     }
 
     public void loadActions() {
         initTransitionVoicequery();
 
-        input_btn_voice.setTag(new Boolean(true));
+        input_btn_voice.setTag(Boolean.valueOf(true));
         input_btn_voice.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -323,7 +391,8 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_SEARCH && !v.getText().toString().equals("")) {
 
-                    new SearchTaskTMDBAPI(v.getText().toString()).execute();
+                    setActualPageResults(1);
+                    new SearchTaskTMDBAPI().execute(v.getText().toString());
 
                     lastQuery = v.getText().toString();
                     setClearOffAndKeyboard();
@@ -352,7 +421,9 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (before == 1) {
                     setClearOn();
-                } else if (count == 0) {
+                }
+
+                if (count == 0) {
                     setClearOff();
                 }
             }
@@ -371,13 +442,14 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-                    if (input_query.isFocused()) {
-                        setClearOffAndKeyboard();
-                    }
+//                    if (input_query.isFocused()) {
+                    setClearOffAndKeyboard();
+//                    }
                 }
                 return false;
             }
         });
+
 
     }
 
@@ -429,11 +501,21 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
 
     @Override
     public void onEndOfSpeech() {
-
     }
 
     @Override
     public void onError(int i) {
+        switch (i) {
+            case SpeechRecognizer.ERROR_SERVER:
+                if (!isNetworkConnected()) {
+                    Snackbar snackbar = Snackbar
+                            .make(layout_busqueda, getString(R.string.general_no_connection), Snackbar.LENGTH_LONG);
+                    snackbar.show();
+                }
+                break;
+            default:
+//                Toast.makeText(BuscarActivity.this, "Error: " + i, Toast.LENGTH_LONG).show();
+        }
         setClearOff();
         setMicOn();
     }
@@ -445,7 +527,8 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
         setClearOff();
         setMicOn();
 
-        new SearchTaskTMDBAPI(bundle.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION).get(0)).execute();
+        setActualPageResults(1);
+        new SearchTaskTMDBAPI().execute(bundle.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION).get(0));
 
         lastQuery = bundle.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION).get(0);
     }
@@ -462,7 +545,7 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
 
     private void setMicOn() {
         if (SpeechRecognizer.isRecognitionAvailable(getApplicationContext())) {
-            input_btn_voice.setTag(new Boolean(true));
+            input_btn_voice.setTag(Boolean.valueOf(true));
             txt_queryvoice.setText(getString(infoText[0]));
             txt_queryvoice.setVisibility(View.GONE);
             input_btn_voice.setImageResource(R.drawable.ic_mic_white_24dp);
@@ -478,7 +561,7 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
             ColorTransitionVoicequery.start();
             setClearOffAndKeyboard();
             txt_queryvoice.setVisibility(View.VISIBLE);
-            input_btn_voice.setTag(new Boolean(false));
+            input_btn_voice.setTag(Boolean.valueOf(false));
             input_btn_voice.setImageResource(R.drawable.ic_mic_off_white_24dp);
         }
     }
@@ -495,5 +578,21 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
 
     public void setClear(boolean clear) {
         this.clear = clear;
+    }
+
+    public int getTotalPagesResults() {
+        return totalPagesResults;
+    }
+
+    public void setTotalPagesResults(int totalPagesResults) {
+        this.totalPagesResults = totalPagesResults;
+    }
+
+    public int getActualPageResults() {
+        return actualPageResults;
+    }
+
+    public void setActualPageResults(int actualPageResults) {
+        this.actualPageResults = actualPageResults;
     }
 }

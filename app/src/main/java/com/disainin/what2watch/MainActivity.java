@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnFr
         setNavigationActions();
 
 
-//        cargarViews();
+//        loadViews();
 //        loadActions();
     }
 

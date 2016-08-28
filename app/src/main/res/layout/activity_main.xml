@@ -28,7 +28,7 @@
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:layout_below="@+id/appbar_base"
-            android:background="@drawable/toolbar_dropshadow" />
+            android:background="@drawable/shadow_toolbar" />
 
         <include
             layout="@layout/fragment_main"

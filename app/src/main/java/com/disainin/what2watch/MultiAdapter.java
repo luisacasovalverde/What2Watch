@@ -1,5 +1,6 @@
 package com.disainin.what2watch;
 
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -16,6 +17,7 @@ import com.squareup.picasso.Picasso;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
 import info.movito.themoviedbapi.TmdbApi;
@@ -35,16 +37,16 @@ public class MultiAdapter extends RecyclerView.Adapter<MultiAdapter.MyViewHolder
 
         private ImageView multi_item_img;
         private TextView multi_item_headtext, multi_item_middletext, multi_item_score;
-        private RelativeLayout layout_item_recyclerview;
+//        private RelativeLayout layout_item_recyclerview;
 
         public MyViewHolder(View view) {
             super(view);
 
             multi_item_img = (ImageView) view.findViewById(R.id.multi_item_img);
-            multi_item_headtext = (TextView) view.findViewById(R.id.multi_item_headtext);
-            multi_item_middletext = (TextView) view.findViewById(R.id.multi_item_middletext);
-            multi_item_score = (TextView) view.findViewById(R.id.multi_item_score);
-            layout_item_recyclerview = (RelativeLayout) view.findViewById(R.id.layout_item_recyclerview);
+//            multi_item_headtext = (TextView) view.findViewById(R.id.multi_item_headtext);
+//            multi_item_middletext = (TextView) view.findViewById(R.id.multi_item_middletext);
+//            multi_item_score = (TextView) view.findViewById(R.id.multi_item_score);
+//            layout_item_recyclerview = (RelativeLayout) view.findViewById(R.id.layout_item_recyclerview);
         }
     }
 
@@ -56,7 +58,8 @@ public class MultiAdapter extends RecyclerView.Adapter<MultiAdapter.MyViewHolder
     @Override
     public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.multi_item_layout, parent, false);
+//                .inflate(R.layout.multi_item_layout, parent, false);
+                .inflate(R.layout.multi_item_layout_grid, parent, false);
 
 
         return new MyViewHolder(itemView);
@@ -101,6 +104,8 @@ public class MultiAdapter extends RecyclerView.Adapter<MultiAdapter.MyViewHolder
 
         //PARA QUITAR LAS IMAGENES EN CACHE AÑADIR ESTO ANTES DE .into -> .memoryPolicy(MemoryPolicy.NO_CACHE)
 
+//        holder.layout_item_recyclerview.setBackgroundColor(Color.rgb(new Random().nextInt(255), new Random().nextInt(255), new Random().nextInt(255)));
+
         switch (item.getMediaType().ordinal()) {
             case 0:
                 MovieDb movie = (MovieDb) item;
@@ -108,10 +113,10 @@ public class MultiAdapter extends RecyclerView.Adapter<MultiAdapter.MyViewHolder
 //                holder.layout_item_recyclerview.setBackgroundColor(holder.layout_item_recyclerview.getContext().getResources().getColor(R.color.bg_item_recyclerview_movie));
 //                Picasso.with(this.context).cancelRequest(holder.imageView);
                 Picasso.with(holder.multi_item_img.getContext()).load("https://image.tmdb.org/t/p/w150_and_h225_bestv2" + movie.getPosterPath()).into(holder.multi_item_img);
-                holder.multi_item_headtext.setText(movie.getTitle());
-                holder.multi_item_middletext.setText(movie.getReleaseDate().substring(0, 4));
-                holder.multi_item_score.setText("" + Math.round(movie.getVoteAverage() * 10.0) / 10.0);
-                holder.multi_item_score.setText(String.format(Locale.US, "%.1f", movie.getVoteAverage()));
+//                holder.multi_item_headtext.setText(movie.getTitle());
+//                holder.multi_item_middletext.setText(movie.getReleaseDate().substring(0, 4));
+//                holder.multi_item_score.setText("" + Math.round(movie.getVoteAverage() * 10.0) / 10.0);
+//                holder.multi_item_score.setText(String.format(Locale.US, "%.1f", movie.getVoteAverage()));
 
 
 //                new CastTaskTMDBAPI(holder).execute(movie.getId());
@@ -164,9 +169,9 @@ public class MultiAdapter extends RecyclerView.Adapter<MultiAdapter.MyViewHolder
 
 //                holder.layout_item_recyclerview.setBackgroundColor(holder.layout_item_recyclerview.getContext().getResources().getColor(R.color.bg_item_recyclerview_serie));
                 Picasso.with(holder.multi_item_img.getContext()).load("https://image.tmdb.org/t/p/w150_and_h225_bestv2" + serie.getPosterPath()).into(holder.multi_item_img);
-                holder.multi_item_headtext.setText(serie.getName());
-                holder.multi_item_middletext.setText(serie.getFirstAirDate().substring(0, 4));
-                holder.multi_item_score.setText(String.format(Locale.US, "%.1f", serie.getVoteAverage()));
+//                holder.multi_item_headtext.setText(serie.getName());
+//                holder.multi_item_middletext.setText(serie.getFirstAirDate().substring(0, 4));
+//                holder.multi_item_score.setText(String.format(Locale.US, "%.1f", serie.getVoteAverage()));
 
                 break;
         }

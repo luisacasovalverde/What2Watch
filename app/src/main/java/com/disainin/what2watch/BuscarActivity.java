@@ -17,6 +17,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
@@ -41,6 +42,7 @@ import java.util.List;
 
 import info.movito.themoviedbapi.TmdbApi;
 import info.movito.themoviedbapi.TmdbSearch;
+import info.movito.themoviedbapi.Utils;
 import info.movito.themoviedbapi.model.MovieDb;
 import info.movito.themoviedbapi.model.Multi;
 import info.movito.themoviedbapi.model.tv.TvSeries;
@@ -306,12 +308,15 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
         btn_back = (ImageButton) findViewById(R.id.busqueda_btn_back);
 
         recyclerview_buscar = (RecyclerView) findViewById(R.id.recycler_view);
-        LinearLayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
-        recyclerview_buscar.setLayoutManager(mLayoutManager);
+        //ESTE FUNCIONA
+//        LinearLayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
+//        recyclerview_buscar.setLayoutManager(mLayoutManager);
+
+        recyclerview_buscar.setHasFixedSize(true);
+        recyclerview_buscar.setLayoutManager(new GridLayoutManager(this, Utility.calculateNoOfColumns(getApplicationContext(), 100)));
         recyclerview_buscar.setItemAnimator(new DefaultItemAnimator());
 
         recyclerview_buscar.setAdapter(mAdapter);
-
 
         layout_loading_buscar = (RelativeLayout) findViewById(R.id.layout_loading_buscar);
     }
@@ -372,6 +377,7 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
             @Override
             public void onClick(View view) {
                 view.setFocusableInTouchMode(true);
+                view.requestFocus();
                 showSoftKeyboard();
 
                 if (input_query.getText().length() > 0) {
@@ -513,6 +519,9 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
                     snackbar.show();
                 }
                 break;
+            case SpeechRecognizer.ERROR_SPEECH_TIMEOUT:
+                input_query.setText(lastQuery);
+                break;
             default:
 //                Toast.makeText(BuscarActivity.this, "Error: " + i, Toast.LENGTH_LONG).show();
         }
@@ -548,7 +557,7 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
             input_btn_voice.setTag(Boolean.valueOf(true));
             txt_queryvoice.setText(getString(infoText[0]));
             txt_queryvoice.setVisibility(View.GONE);
-            input_btn_voice.setImageResource(R.drawable.ic_mic_white_24dp);
+            input_btn_voice.setImageResource(R.drawable.ic_svg_microphone);
             sr.destroy();
             ColorTransitionVoicequery.reverse();
             recyclerview_buscar.setVisibility(View.VISIBLE);
@@ -562,7 +571,7 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
             setClearOffAndKeyboard();
             txt_queryvoice.setVisibility(View.VISIBLE);
             input_btn_voice.setTag(Boolean.valueOf(false));
-            input_btn_voice.setImageResource(R.drawable.ic_mic_off_white_24dp);
+            input_btn_voice.setImageResource(R.drawable.ic_svg_microphone_off);
         }
     }
 

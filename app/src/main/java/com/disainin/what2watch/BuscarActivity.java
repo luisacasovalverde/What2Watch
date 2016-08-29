@@ -14,6 +14,7 @@ import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -195,7 +196,7 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
 
 
                 if (results.size() > 0) {
-                    mAdapter = new MultiAdapter(results);
+                    mAdapter = new MultiAdapter(results, BuscarActivity.this);
                     recyclerview_buscar.setAdapter(mAdapter);
                     mAdapter.notifyDataSetChanged();
                 } else {
@@ -234,10 +235,16 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
         }
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        hideSoftKeyboard();
+    }
 
     @Override
     public void onBackPressed() {
         super.onBackPressed();
+//        hideSoftKeyboard();
         safeDestroySR();
         overridePendingTransition(R.animator.pull_left, R.animator.push_right);
         finish();
@@ -323,8 +330,8 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
 
 
     public void initTransitionVoicequery() {
-        int colorFrom = getResources().getColor(R.color.bg_white_content);
-        int colorTo = getResources().getColor(R.color.bg_input_busqueda);
+        int colorFrom = ContextCompat.getColor(getApplicationContext(), R.color.bg_white_content);
+        int colorTo = ContextCompat.getColor(getApplicationContext(), R.color.bg_input_busqueda);
 
         ColorTransitionVoicequery = ValueAnimator.ofObject(new ArgbEvaluator(), colorFrom, colorTo);
         ColorTransitionVoicequery.setDuration(350);

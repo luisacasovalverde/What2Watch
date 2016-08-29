@@ -22,5 +22,6 @@
 
     <string name="attr_img_voice_query">Buscar por voz</string>
     <string name="attr_img_back">Ir atrás</string>
-    <string name="attr_img_multi_item">Ir atrás</string>
+    <string name="attr_img_multi_item">Posters de los resultados de búsqueda</string>
+    <string name="attr_img_display_item">Posters de los items a consultar</string>
 </resources>

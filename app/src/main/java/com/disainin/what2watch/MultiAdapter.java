@@ -1,7 +1,10 @@
 package com.disainin.what2watch;
 
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -32,6 +35,7 @@ import info.movito.themoviedbapi.model.tv.TvSeries;
 public class MultiAdapter extends RecyclerView.Adapter<MultiAdapter.MyViewHolder> {
 
     private List<Multi> items;
+    private AppCompatActivity activity;
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
 
@@ -51,8 +55,9 @@ public class MultiAdapter extends RecyclerView.Adapter<MultiAdapter.MyViewHolder
     }
 
 
-    public MultiAdapter(List<Multi> items) {
+    public MultiAdapter(List<Multi> items, AppCompatActivity activity) {
         this.items = items;
+        this.activity = activity;
     }
 
     @Override
@@ -100,7 +105,7 @@ public class MultiAdapter extends RecyclerView.Adapter<MultiAdapter.MyViewHolder
     @Override
     public void onBindViewHolder(MyViewHolder holder, int position) {
 
-        Multi item = items.get(position);
+        final Multi item = items.get(position);
 
         //PARA QUITAR LAS IMAGENES EN CACHE AÑADIR ESTO ANTES DE .into -> .memoryPolicy(MemoryPolicy.NO_CACHE)
 
@@ -113,6 +118,16 @@ public class MultiAdapter extends RecyclerView.Adapter<MultiAdapter.MyViewHolder
 //                holder.layout_item_recyclerview.setBackgroundColor(holder.layout_item_recyclerview.getContext().getResources().getColor(R.color.bg_item_recyclerview_movie));
 //                Picasso.with(this.context).cancelRequest(holder.imageView);
                 Picasso.with(holder.multi_item_img.getContext()).load("https://image.tmdb.org/t/p/w150_and_h225_bestv2" + movie.getPosterPath()).into(holder.multi_item_img);
+
+                holder.multi_item_img.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Intent openMovieData = new Intent(activity.getApplicationContext(), DisplayMovieActivity.class);
+                        openMovieData.putExtra("movie_id", ((MovieDb) item).getId());
+                        activity.startActivity(openMovieData);
+                        activity.overridePendingTransition(R.animator.pull_right, R.animator.push_left);
+                    }
+                });
 //                holder.multi_item_headtext.setText(movie.getTitle());
 //                holder.multi_item_middletext.setText(movie.getReleaseDate().substring(0, 4));
 //                holder.multi_item_score.setText("" + Math.round(movie.getVoteAverage() * 10.0) / 10.0);

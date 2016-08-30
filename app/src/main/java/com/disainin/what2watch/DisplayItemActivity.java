@@ -1,12 +1,10 @@
 package com.disainin.what2watch;
 
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.AsyncTask;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.CoordinatorLayout;
-import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -20,24 +18,28 @@ import android.widget.TextView;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 
 import info.movito.themoviedbapi.TmdbApi;
 import info.movito.themoviedbapi.TmdbMovies;
+import info.movito.themoviedbapi.TmdbTV;
 import info.movito.themoviedbapi.model.Artwork;
 import info.movito.themoviedbapi.model.MovieDb;
 import info.movito.themoviedbapi.model.MovieImages;
+import info.movito.themoviedbapi.model.Multi;
+import info.movito.themoviedbapi.model.tv.TvSeries;
 
 public class DisplayItemActivity extends AppCompatActivity {
 
 
-    private String LANG = "es", POSTER_PATH_ORIGINAL, BASE_PATH_IMG = null;
+    private String LANG = "es", POSTER_PATH_ORIGINAL, BACKDROP_PATH_ORIGINAL, BASE_PATH_IMG = null;
     private ImageView header_img;
     private NestedScrollView display_item_nested;
     private CoordinatorLayout coordinator;
     private CollapsingToolbarLayout collapsing;
     private AppBarLayout appbar;
-    private TextView title, overview;
+    private TextView title, overview, vote_avg, release_date;
     private Toolbar toolbar;
 
     @Override
@@ -63,10 +65,11 @@ public class DisplayItemActivity extends AppCompatActivity {
             final Intent openingMovie = getIntent();
             Bundle bundle = openingMovie.getExtras();
             POSTER_PATH_ORIGINAL = bundle.getString("display_item_poster_path");
+            BACKDROP_PATH_ORIGINAL = bundle.getString("display_item_backdrop_path");
 
 
-            new MovieImagesTaskTMDBAPI().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, bundle.getInt("display_item_id"));
-            new MovieTaskTMDBAPI().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, bundle.getInt("display_item_id"));
+            new ItemImagesTaskTMDBAPI(bundle.getInt("display_item_type")).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, bundle.getInt("display_item_id"));
+            new MovieTaskTMDBAPI(bundle.getInt("display_item_type")).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, bundle.getInt("display_item_id"));
 
             loadViewsToolbar();
             loadActionsToolbar();
@@ -77,6 +80,7 @@ public class DisplayItemActivity extends AppCompatActivity {
     }
 
     private void fadeInActivity() {
+        toolbar.setBackgroundResource(R.drawable.bg_toolbar_display_item);
         display_item_nested.setVisibility(View.VISIBLE);
     }
 
@@ -101,37 +105,52 @@ public class DisplayItemActivity extends AppCompatActivity {
     }
 
     private void loadActionsToolbar() {
-        appbar.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
+/*        appbar.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
             @Override
             public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
                 if (collapsing.getHeight() + verticalOffset < 2 * ViewCompat.getMinimumHeight(collapsing)) {
-                    toolbar.setBackgroundColor(Color.argb(80, 0, 0, 0));
+                    toolbar.setBackgroundColor(Color.argb(0, 0, 0, 0));
                 } else {
                     toolbar.setBackgroundResource(R.drawable.bg_toolbar_display_item);
                 }
             }
-        });
+        });*/
     }
 
     private void loadViews() {
-        title = (TextView) findViewById(R.id.display_movie_title);
-        overview = (TextView) findViewById(R.id.display_movie_overview);
+        title = (TextView) findViewById(R.id.display_item_title);
+        overview = (TextView) findViewById(R.id.display_item_overview);
+        vote_avg = (TextView) findViewById(R.id.display_item_vote_avg);
+        release_date = (TextView) findViewById(R.id.display_item_release_date);
+
         display_item_nested = (NestedScrollView) findViewById(R.id.display_item_nested);
         display_item_nested.setVisibility(View.GONE);
     }
 
 
-    private class MovieImagesTaskTMDBAPI extends AsyncTask<Integer, Integer, List<Artwork>> {
+    private class ItemImagesTaskTMDBAPI extends AsyncTask<Integer, Integer, List<Artwork>> {
+
+        int type;
+
+
+        public ItemImagesTaskTMDBAPI(int type) {
+            this.type = type;
+        }
 
         @Override
         protected void onPreExecute() {
         }
 
         protected List<Artwork> doInBackground(Integer... code) {
-            TmdbMovies movies = new TmdbApi("1947a2516ec6cb3cf97ef1da21fdaa87").getMovies();
-            MovieImages movie_imgs = movies.getImages(code[0], null);
+            switch (type) {
+                case 0:
+                    TmdbMovies movies = new TmdbApi("1947a2516ec6cb3cf97ef1da21fdaa87").getMovies();
+                    MovieImages imgs = movies.getImages(code[0], null);
 
-            return movie_imgs.getBackdrops();
+                    return imgs.getBackdrops();
+            }
+
+            return null;
         }
 
         @Override
@@ -143,6 +162,10 @@ public class DisplayItemActivity extends AppCompatActivity {
                 path = imgs.get(new Random().nextInt(imgs.size())).getFilePath();
             } else {
                 path = POSTER_PATH_ORIGINAL;
+
+                if (type == 2) {
+                    path = BACKDROP_PATH_ORIGINAL;
+                }
             }
 
             while (BASE_PATH_IMG.equals("")) {
@@ -163,25 +186,88 @@ public class DisplayItemActivity extends AppCompatActivity {
         }
     }
 
-    private class MovieTaskTMDBAPI extends AsyncTask<Integer, Integer, MovieDb> {
+    private class MovieTaskTMDBAPI extends AsyncTask<Integer, Integer, Multi> {
+
+        int type;
+        float DATA_VOTE_AVG;
+        String DATA_TITLE, DATA_OVERVIEW, DATA_RELEASE_DATE;
+
+        public MovieTaskTMDBAPI(int type) {
+            this.type = type;
+        }
 
         @Override
         protected void onPreExecute() {
         }
 
-        protected MovieDb doInBackground(Integer... code) {
-            TmdbMovies movies = new TmdbApi("1947a2516ec6cb3cf97ef1da21fdaa87").getMovies();
-            MovieDb movie = movies.getMovie(code[0], LANG);
+        protected Multi doInBackground(Integer... code) {
+            switch (type) {
+                case 0:
+                    TmdbMovies movies = new TmdbApi("1947a2516ec6cb3cf97ef1da21fdaa87").getMovies();
+                    MovieDb movie = movies.getMovie(code[0], LANG);
 
-            return movie;
+                    setDATA_TITLE(movie.getTitle());
+                    setDATA_OVERVIEW(movie.getOverview());
+                    setDATA_RELEASE_DATE(movie.getReleaseDate());
+                    setDATA_VOTE_AVG(movie.getVoteAverage());
+
+                    return movie;
+                case 2:
+                    TmdbTV series = new TmdbApi("1947a2516ec6cb3cf97ef1da21fdaa87").getTvSeries();
+                    TvSeries serie = series.getSeries(code[0], LANG);
+
+                    setDATA_TITLE(serie.getName());
+                    setDATA_OVERVIEW(serie.getOverview());
+                    setDATA_RELEASE_DATE(serie.getFirstAirDate());
+                    setDATA_VOTE_AVG(serie.getVoteAverage());
+
+                    return serie;
+            }
+
+            return null;
         }
 
         @Override
-        protected void onPostExecute(MovieDb movie) {
-            if (movie != null) {
-                title.setText(movie.getTitle());
-                overview.setText(movie.getOverview());
+        protected void onPostExecute(Multi item) {
+            if (item != null) {
+                title.setText(getDATA_TITLE());
+                overview.setText(getDATA_OVERVIEW());
+                vote_avg.setText(String.format(Locale.FRANCE, "%.1f", getDATA_VOTE_AVG()));
+                release_date.setText(getDATA_RELEASE_DATE().substring(0, 4));
             }
+        }
+
+
+        public float getDATA_VOTE_AVG() {
+            return DATA_VOTE_AVG;
+        }
+
+        public void setDATA_VOTE_AVG(float DATA_VOTE_AVG) {
+            this.DATA_VOTE_AVG = DATA_VOTE_AVG;
+        }
+
+        public String getDATA_TITLE() {
+            return DATA_TITLE;
+        }
+
+        public void setDATA_TITLE(String DATA_TITLE) {
+            this.DATA_TITLE = DATA_TITLE;
+        }
+
+        public String getDATA_OVERVIEW() {
+            return DATA_OVERVIEW;
+        }
+
+        public void setDATA_OVERVIEW(String DATA_OVERVIEW) {
+            this.DATA_OVERVIEW = DATA_OVERVIEW;
+        }
+
+        public String getDATA_RELEASE_DATE() {
+            return DATA_RELEASE_DATE;
+        }
+
+        public void setDATA_RELEASE_DATE(String DATA_RELEASE_DATE) {
+            this.DATA_RELEASE_DATE = DATA_RELEASE_DATE;
         }
     }
 

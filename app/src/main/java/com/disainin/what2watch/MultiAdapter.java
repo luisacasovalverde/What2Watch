@@ -126,7 +126,7 @@ public class MultiAdapter extends RecyclerView.Adapter<MultiAdapter.MyViewHolder
 
         holder.multi_item_img.setOnClickListener(new View.OnClickListener() {
             int CODE;
-            String POSTER_PATH;
+            String POSTER_PATH, BACKDROP_PATH;
 
             @Override
             public void onClick(View view) {
@@ -135,7 +135,7 @@ public class MultiAdapter extends RecyclerView.Adapter<MultiAdapter.MyViewHolder
                         MovieDb movie = (MovieDb) item;
                         CODE = movie.getId();
                         POSTER_PATH = movie.getPosterPath();
-
+                        BACKDROP_PATH = movie.getBackdropPath();
                         break;
 //                    case 1:
 //                        Person person = (Person) items;
@@ -144,12 +144,15 @@ public class MultiAdapter extends RecyclerView.Adapter<MultiAdapter.MyViewHolder
                         TvSeries serie = (TvSeries) item;
                         CODE = serie.getId();
                         POSTER_PATH = serie.getPosterPath();
+                        BACKDROP_PATH = serie.getBackdropPath();
                         break;
                 }
 
                 Intent openMovieData = new Intent(activity.getApplicationContext(), DisplayItemActivity.class);
                 openMovieData.putExtra("display_item_id", CODE);
                 openMovieData.putExtra("display_item_poster_path", POSTER_PATH);
+                openMovieData.putExtra("display_item_backdrop_path", BACKDROP_PATH);
+                openMovieData.putExtra("display_item_type", item.getMediaType().ordinal());
                 activity.startActivity(openMovieData);
                 activity.overridePendingTransition(R.animator.pull_right, R.animator.push_left);
             }

@@ -15,7 +15,7 @@
         android:padding="10dp">
 
         <TextView
-            android:id="@+id/display_movie_title"
+            android:id="@+id/display_item_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
@@ -27,14 +27,34 @@
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/display_movie_overview"
+            android:id="@+id/display_item_release_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="New Text"
+            android:textSize="10sp"
+            android:layout_below="@+id/display_item_title"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
+
+        <TextView
+            android:id="@+id/display_item_overview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/display_movie_title"
-            android:layout_alignStart="@+id/display_movie_title"
-            android:layout_below="@+id/display_movie_title"
             android:text="New Text"
-            android:textSize="15sp"
-            android:layout_marginTop="5dp" />
+            android:textSize="13sp"
+            android:layout_below="@+id/display_item_release_date"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_marginTop="10dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="New Text"
+            android:id="@+id/display_item_vote_avg"
+            android:layout_alignTop="@+id/display_item_release_date"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true" />
+
     </RelativeLayout>
 </RelativeLayout>

@@ -385,7 +385,7 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
             public void onClick(View view) {
                 view.setFocusableInTouchMode(true);
                 view.requestFocus();
-                showSoftKeyboard();
+//                showSoftKeyboard();
 
                 if (input_query.getText().length() > 0) {
                     setClearOn();

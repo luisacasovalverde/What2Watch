@@ -6,6 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:animateLayoutChanges="true"
+    android:background="@color/bg_white_content"
     android:fitsSystemWindows="true">
 
     <android.support.design.widget.AppBarLayout
@@ -22,7 +23,7 @@
             android:layout_height="match_parent"
             android:background="#00000000"
             android:fitsSystemWindows="true"
-            app:contentScrim="#40000000"
+            app:contentScrim="#80000000"
             app:expandedTitleMarginEnd="64dp"
             app:expandedTitleMarginStart="48dp"
             app:layout_scrollFlags="scroll|exitUntilCollapsed">

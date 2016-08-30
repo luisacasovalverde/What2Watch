@@ -5,7 +5,6 @@
     android:id="@+id/toolbar_display_item"
     android:layout_width="match_parent"
     android:layout_height="?actionBarSize"
-    android:background="@drawable/bg_toolbar_display_item"
     app:layout_collapseMode="pin">
 
 </android.support.v7.widget.Toolbar>

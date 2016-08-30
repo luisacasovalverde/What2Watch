@@ -23,7 +23,7 @@
         </activity>
         <activity android:name=".MainActivity" />
         <activity android:name=".BuscarActivity" />
-        <activity android:name=".DisplayMovieActivity"></activity>
+        <activity android:name=".DisplayItemActivity"></activity>
     </application>
 
 </manifest>

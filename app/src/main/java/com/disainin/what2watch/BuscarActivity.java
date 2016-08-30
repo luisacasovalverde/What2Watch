@@ -114,8 +114,8 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
 
         @Override
         protected void onPreExecute() {
-//            layout_loading_buscar.setVisibility(View.VISIBLE);
-            layout_loading_buscar.animate()
+            layout_loading_buscar.setVisibility(View.VISIBLE);
+/*            layout_loading_buscar.animate()
                     .alpha(1.0f)
                     .setDuration(150)
                     .setListener(new AnimatorListenerAdapter() {
@@ -124,7 +124,7 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
                             super.onAnimationEnd(animation);
                             layout_loading_buscar.setVisibility(View.VISIBLE);
                         }
-                    });
+                    });*/
         }
 
         protected List<Multi> doInBackground(String... query) {
@@ -212,7 +212,7 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
                 }
             }
 
-            layout_loading_buscar.animate()
+/*            layout_loading_buscar.animate()
                     .alpha(0.0f)
                     .setDuration(150)
                     .setListener(new AnimatorListenerAdapter() {
@@ -221,8 +221,8 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
                             super.onAnimationEnd(animation);
                             layout_loading_buscar.setVisibility(View.GONE);
                         }
-                    });
-//                layout_loading_buscar.setVisibility(View.GONE);
+                    });*/
+            layout_loading_buscar.setVisibility(View.GONE);
         }
     }
 

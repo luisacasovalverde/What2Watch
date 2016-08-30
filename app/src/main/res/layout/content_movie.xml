@@ -9,17 +9,32 @@
         android:layout_height="6dp"
         android:background="@drawable/shadow_toolbar" />
 
-    <TextView
-        android:id="@+id/display_movie_title"
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_margin="5dp"
-        android:padding="5dp"
-        android:text="New Text"
-        android:textColor="#ffffff"
-        android:textSize="25sp"
-        android:textStyle="bold" />
+        android:layout_height="match_parent"
+        android:padding="10dp">
+
+        <TextView
+            android:id="@+id/display_movie_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:text="New Text"
+            android:textColor="#424242"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/display_movie_overview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/display_movie_title"
+            android:layout_alignStart="@+id/display_movie_title"
+            android:layout_below="@+id/display_movie_title"
+            android:text="New Text"
+            android:textSize="15sp"
+            android:layout_marginTop="5dp" />
+    </RelativeLayout>
 </RelativeLayout>

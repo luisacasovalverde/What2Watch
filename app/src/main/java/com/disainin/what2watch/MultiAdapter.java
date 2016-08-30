@@ -1,41 +1,30 @@
 package com.disainin.what2watch;
 
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
-import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
-import java.util.Locale;
-import java.util.Random;
-import java.util.concurrent.ExecutionException;
 
-import info.movito.themoviedbapi.TmdbApi;
-import info.movito.themoviedbapi.TmdbMovies;
-import info.movito.themoviedbapi.model.Credits;
 import info.movito.themoviedbapi.model.MovieDb;
 import info.movito.themoviedbapi.model.Multi;
-import info.movito.themoviedbapi.model.people.Person;
-import info.movito.themoviedbapi.model.people.PersonCast;
 import info.movito.themoviedbapi.model.tv.TvSeries;
 
 public class MultiAdapter extends RecyclerView.Adapter<MultiAdapter.MyViewHolder> {
 
     private List<Multi> items;
     private AppCompatActivity activity;
+    private String URL_DIMENSION_IMG = "w150_and_h225_bestv2", URL_BASE = "https://image.tmdb.org/t/p/";
+
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
 
@@ -47,9 +36,6 @@ public class MultiAdapter extends RecyclerView.Adapter<MultiAdapter.MyViewHolder
             super(view);
 
             multi_item_img = (ImageView) view.findViewById(R.id.multi_item_img);
-//            multi_item_headtext = (TextView) view.findViewById(R.id.multi_item_headtext);
-//            multi_item_middletext = (TextView) view.findViewById(R.id.multi_item_middletext);
-//            multi_item_score = (TextView) view.findViewById(R.id.multi_item_score);
 //            layout_item_recyclerview = (RelativeLayout) view.findViewById(R.id.layout_item_recyclerview);
         }
     }
@@ -63,14 +49,13 @@ public class MultiAdapter extends RecyclerView.Adapter<MultiAdapter.MyViewHolder
     @Override
     public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
-//                .inflate(R.layout.multi_item_layout, parent, false);
-                .inflate(R.layout.multi_item_layout_grid, parent, false);
+                .inflate(R.layout.multi_item_layout, parent, false);
 
 
         return new MyViewHolder(itemView);
     }
 
-    private class CastTaskTMDBAPI extends AsyncTask<Integer, Integer, String> {
+/*    private class CastTaskTMDBAPI extends AsyncTask<Integer, Integer, String> {
 
         private MyViewHolder holder;
 
@@ -99,81 +84,21 @@ public class MultiAdapter extends RecyclerView.Adapter<MultiAdapter.MyViewHolder
         public MyViewHolder getHolder() {
             return holder;
         }
-    }
+    }*/
 
 
     @Override
-    public void onBindViewHolder(MyViewHolder holder, int position) {
+    public void onBindViewHolder(final MyViewHolder holder, int position) {
+        String POSTER_PATH = "";
 
         final Multi item = items.get(position);
 
         //PARA QUITAR LAS IMAGENES EN CACHE AÑADIR ESTO ANTES DE .into -> .memoryPolicy(MemoryPolicy.NO_CACHE)
 
-//        holder.layout_item_recyclerview.setBackgroundColor(Color.rgb(new Random().nextInt(255), new Random().nextInt(255), new Random().nextInt(255)));
-
         switch (item.getMediaType().ordinal()) {
             case 0:
                 MovieDb movie = (MovieDb) item;
-
-//                holder.layout_item_recyclerview.setBackgroundColor(holder.layout_item_recyclerview.getContext().getResources().getColor(R.color.bg_item_recyclerview_movie));
-//                Picasso.with(this.context).cancelRequest(holder.imageView);
-                Picasso.with(holder.multi_item_img.getContext()).load("https://image.tmdb.org/t/p/w150_and_h225_bestv2" + movie.getPosterPath()).into(holder.multi_item_img);
-
-                holder.multi_item_img.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        Intent openMovieData = new Intent(activity.getApplicationContext(), DisplayMovieActivity.class);
-                        openMovieData.putExtra("movie_id", ((MovieDb) item).getId());
-                        activity.startActivity(openMovieData);
-                        activity.overridePendingTransition(R.animator.pull_right, R.animator.push_left);
-                    }
-                });
-//                holder.multi_item_headtext.setText(movie.getTitle());
-//                holder.multi_item_middletext.setText(movie.getReleaseDate().substring(0, 4));
-//                holder.multi_item_score.setText("" + Math.round(movie.getVoteAverage() * 10.0) / 10.0);
-//                holder.multi_item_score.setText(String.format(Locale.US, "%.1f", movie.getVoteAverage()));
-
-
-//                new CastTaskTMDBAPI(holder).execute(movie.getId());
-
-
-//                final MyViewHolder holder_cast = holder;
-//
-//                new AsyncTask<Integer, Integer, List<PersonCast>>() {
-//
-//                    @Override
-//                    protected List<PersonCast> doInBackground(Integer... integers) {
-//                        TmdbMovies items = new TmdbApi("1947a2516ec6cb3cf97ef1da21fdaa87").getMovies();
-//                        return items.getMovie(integers[0], "es").getCredits().getCast();
-//                    }
-//
-//                    @Override
-//                    protected void onPostExecute(List<PersonCast> person) {
-//                        for (int i = 0; i < person.size(); i++) {
-//                            holder_cast.multi_item_middletext.append(", " + person.get(i).getName());
-//                            if (i == 1) {
-//                                break;
-//                            }
-//                        }
-//                    }
-//
-//                }.execute(movie.getId());
-
-
-//                DatosAdapter cast = new DatosAdapter(DatosAdapter.CAST, DatosAdapter.MOVIE, movie.getId());
-//                cast.execute();
-//                cast.
-
-//                    holder.multi_item_middletext.append(", (2) - " + cast.get().size());
-
-
-//                    for (int i = 0; i < cast.size(); i++) {
-//                        holder.multi_item_middletext.append(", " + cast.get(i).getName());
-//                        if (i == 1) {
-//                            break;
-//                        }
-//                    }
-
+                POSTER_PATH = movie.getPosterPath();
 
                 break;
 //                    case 1:
@@ -181,15 +106,55 @@ public class MultiAdapter extends RecyclerView.Adapter<MultiAdapter.MyViewHolder
 //                        break;
             case 2:
                 TvSeries serie = (TvSeries) item;
-
-//                holder.layout_item_recyclerview.setBackgroundColor(holder.layout_item_recyclerview.getContext().getResources().getColor(R.color.bg_item_recyclerview_serie));
-                Picasso.with(holder.multi_item_img.getContext()).load("https://image.tmdb.org/t/p/w150_and_h225_bestv2" + serie.getPosterPath()).into(holder.multi_item_img);
-//                holder.multi_item_headtext.setText(serie.getName());
-//                holder.multi_item_middletext.setText(serie.getFirstAirDate().substring(0, 4));
-//                holder.multi_item_score.setText(String.format(Locale.US, "%.1f", serie.getVoteAverage()));
-
+                POSTER_PATH = serie.getPosterPath();
                 break;
         }
+
+        Picasso.with(holder.multi_item_img.getContext()).load(URL_BASE + URL_DIMENSION_IMG + POSTER_PATH).into(holder.multi_item_img, new com.squareup.picasso.Callback() {
+            @Override
+            public void onSuccess() {
+//                holder.multi_item_img.setBackgroundResource(R.drawable.shadow_poster_img);
+                holder.multi_item_img.setBackgroundColor(Color.argb(20, 0, 0, 0));
+            }
+
+            @Override
+            public void onError() {
+
+            }
+        });
+
+
+        holder.multi_item_img.setOnClickListener(new View.OnClickListener() {
+            int CODE;
+            String POSTER_PATH;
+
+            @Override
+            public void onClick(View view) {
+                switch (item.getMediaType().ordinal()) {
+                    case 0:
+                        MovieDb movie = (MovieDb) item;
+                        CODE = movie.getId();
+                        POSTER_PATH = movie.getPosterPath();
+
+                        break;
+//                    case 1:
+//                        Person person = (Person) items;
+//                        break;
+                    case 2:
+                        TvSeries serie = (TvSeries) item;
+                        CODE = serie.getId();
+                        POSTER_PATH = serie.getPosterPath();
+                        break;
+                }
+
+                Intent openMovieData = new Intent(activity.getApplicationContext(), DisplayItemActivity.class);
+                openMovieData.putExtra("display_item_id", CODE);
+                openMovieData.putExtra("display_item_poster_path", POSTER_PATH);
+                activity.startActivity(openMovieData);
+                activity.overridePendingTransition(R.animator.pull_right, R.animator.push_left);
+            }
+        });
+
 
 //        notifyDataSetChanged();
 

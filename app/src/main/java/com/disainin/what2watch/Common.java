@@ -1,7 +1,9 @@
 package com.disainin.what2watch;
 
-import android.view.inputmethod.InputMethodManager;
+import java.util.Locale;
 
 public class Common {
+
+    public static final String DEVICE_LANG = Locale.getDefault().getLanguage();
 
 }

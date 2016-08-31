@@ -1,33 +1,16 @@
 package com.disainin.what2watch;
 
 import android.content.Intent;
-import android.graphics.Typeface;
 import android.net.Uri;
-import android.support.design.widget.NavigationView;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.TextView;
 
 
 public class MainActivity extends AppCompatActivity implements MainFragment.OnFragmentInteractionListener {
 
-    //    private RelativeLayout layout_base;
-//    private Button btn_accion, btn_mic;
-    private TextView txt_resultado, txt_queryvoice, nav_header_text;
-    //    private EditText input_pelicula;
-//    public static TextView[] vistas;
-
-
-    private DrawerLayout drawerLayout;
-    private NavigationView navigation_view;
     private Toolbar toolbar;
 
     @Override
@@ -37,14 +20,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnFr
 
         toolbar = (Toolbar) findViewById(R.id.toolbar_actionbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setTitle(getString(R.string.home));
-
-
-        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawerLayout, toolbar, R.string.bv_reconociendo, R.string.bv_reconociendo);
-        drawerLayout.setDrawerListener(toggle);
-        toggle.syncState();
+        getSupportActionBar().setTitle(getString(R.string.general_home));
 
         setNavigationActions();
 
@@ -55,7 +31,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnFr
 
 
     private void setNavigationActions() {
-        navigation_view = (NavigationView) findViewById(R.id.navigation_view);
+        /*navigation_view = (NavigationView) findViewById(R.id.navigation_view);
 
         navigation_view.setNavigationItemSelectedListener(
                 new NavigationView.OnNavigationItemSelectedListener() {
@@ -86,37 +62,15 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnFr
                         return true;
                     }
 
-                });
+                }
+
+        );*/
     }
 
 
-    public void cargarViews() {
+    public void loadViews() {
 //        Typeface fontawesome = Typeface.createFromAsset(getAssets(), "fonts/fontawesome-webfont.ttf");
-        Typeface font_roboto_thin = Typeface.createFromAsset(getAssets(), "fonts/Roboto-Thin.ttf");
-
-//        nav_header_text = (TextView) nav_header.findViewById(R.id.nav_header_text);
-//        nav_header_text.setText("hola");
-
-
-//        btn_accion = (Button) findViewById(R.id.btn_accion);
-//        btn_accion.setTypeface(fontawesome);
-//
-//        txt_resultado = (TextView) findViewById(R.id.txt_resultado);
-//
-//        txt_queryvoice = (TextView) findViewById(R.id.txt_queryvoice);
-//
-//        input_pelicula = (EditText) findViewById(R.id.input_pelicula);
-//
-//        btn_mic = (Button) findViewById(R.id.btnSpeak);
-//        btn_mic.setTypeface(fontawesome);
-//
-//        vistas = new TextView[]{
-//                txt_resultado,
-//                input_pelicula
-//        };
-//
-//
-//        layout_base = (RelativeLayout) findViewById(R.id.layout_base);
+//        Typeface font_roboto_thin = Typeface.createFromAsset(getAssets(), "fonts/Roboto-Thin.ttf");
     }
 
     @Override
@@ -167,7 +121,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnFr
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.toolbar_menu, menu);
+        getMenuInflater().inflate(R.menu.toolbar_actionbar_menu, menu);
         return true;
     }
 

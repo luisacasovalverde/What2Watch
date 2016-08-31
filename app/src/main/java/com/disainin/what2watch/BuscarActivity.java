@@ -1,11 +1,8 @@
 package com.disainin.what2watch;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -19,7 +16,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -30,11 +26,8 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.RelativeLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -43,7 +36,6 @@ import java.util.List;
 
 import info.movito.themoviedbapi.TmdbApi;
 import info.movito.themoviedbapi.TmdbSearch;
-import info.movito.themoviedbapi.Utils;
 import info.movito.themoviedbapi.model.MovieDb;
 import info.movito.themoviedbapi.model.Multi;
 import info.movito.themoviedbapi.model.tv.TvSeries;
@@ -78,28 +70,6 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
     }
 
 
-/*    private class SearchMovieTaskTMDBAPI extends AsyncTask<Void, Void, MovieDb> {
-
-        private int code;
-
-        public SearchMovieTaskTMDBAPI(int code) {
-            this.code = code;
-        }
-
-        protected MovieDb doInBackground(Void... v) {
-            TmdbMovies movies = new TmdbApi("1947a2516ec6cb3cf97ef1da21fdaa87").getMovies();
-            return movies.getMovie(getCode(), "es");
-        }
-
-        protected void onPostExecute(MovieDb movie) {
-            txt_resultado.append(movie.getTitle() + " (" + movie.getReleaseDate() + ")- " + movie.getVoteAverage() + "\n");
-        }
-
-        public int getCode() {
-            return code;
-        }
-    }*/
-
     protected boolean isNetworkConnected() {
         try {
             ConnectivityManager mConnectivityManager = (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -130,7 +100,7 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
         protected List<Multi> doInBackground(String... query) {
             try {
                 TmdbSearch r = new TmdbApi("1947a2516ec6cb3cf97ef1da21fdaa87").getSearch();
-                TmdbSearch.MultiListResultsPage todo = r.searchMulti(query[0], "es", getActualPageResults());
+                TmdbSearch.MultiListResultsPage todo = r.searchMulti(query[0], Common.DEVICE_LANG, getActualPageResults());
                 todo.getTotalPages();
 
 
@@ -150,7 +120,7 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
                             break;
                         case 1:
 //                        Person person = (Person) item;
-                            i.remove();
+                            i.remove(); //cuando se pueda implementar, poner las limitaciones oportunas
                             break;
                         case 2:
                             TvSeries serie = (TvSeries) item;
@@ -171,7 +141,7 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
             } catch (RuntimeException e) {
                 if (!isNetworkConnected()) {
                     Snackbar snackbar = Snackbar
-                            .make(layout_busqueda, getString(R.string.general_no_connection), Snackbar.LENGTH_LONG)
+                            .make(layout_busqueda, getString(R.string.warning_no_connection), Snackbar.LENGTH_LONG)
                             /*.setAction("OK", new View.OnClickListener() {
                                 @Override
                                 public void onClick(View view) {
@@ -331,7 +301,7 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
 
     public void initTransitionVoicequery() {
         int colorFrom = ContextCompat.getColor(getApplicationContext(), R.color.bg_white_content);
-        int colorTo = ContextCompat.getColor(getApplicationContext(), R.color.bg_input_busqueda);
+        int colorTo = ContextCompat.getColor(getApplicationContext(), R.color.bg_orange_content);
 
         ColorTransitionVoicequery = ValueAnimator.ofObject(new ArgbEvaluator(), colorFrom, colorTo);
         ColorTransitionVoicequery.setDuration(350);
@@ -522,7 +492,7 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
             case SpeechRecognizer.ERROR_SERVER:
                 if (!isNetworkConnected()) {
                     Snackbar snackbar = Snackbar
-                            .make(layout_busqueda, getString(R.string.general_no_connection), Snackbar.LENGTH_LONG);
+                            .make(layout_busqueda, getString(R.string.warning_no_connection), Snackbar.LENGTH_LONG);
                     snackbar.show();
                 }
                 break;

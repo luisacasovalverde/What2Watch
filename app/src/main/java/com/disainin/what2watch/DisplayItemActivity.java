@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.CoordinatorLayout;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -13,6 +14,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
@@ -33,8 +35,9 @@ import info.movito.themoviedbapi.model.tv.TvSeries;
 public class DisplayItemActivity extends AppCompatActivity {
 
 
-    private String LANG = "es", POSTER_PATH_ORIGINAL, BACKDROP_PATH_ORIGINAL, BASE_PATH_IMG = null;
+    private String LANG = Common.DEVICE_LANG, POSTER_PATH_ORIGINAL, BACKDROP_PATH_ORIGINAL, BASE_PATH_IMG = null;
     private ImageView header_img;
+    private RelativeLayout header_box;
     private NestedScrollView display_item_nested;
     private CoordinatorLayout coordinator;
     private CollapsingToolbarLayout collapsing;
@@ -75,8 +78,26 @@ public class DisplayItemActivity extends AppCompatActivity {
             loadActionsToolbar();
 
             loadViews();
+
+
         }
 
+    }
+
+    private void setColorType(int type) {
+        switch (type) {
+            case 0:
+                header_box.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.bg_display_item_movie));
+                break;
+            case 1:
+                header_box.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.bg_display_item_person));
+                break;
+            case 2:
+                header_box.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.bg_display_item_tvserie));
+                break;
+            default:
+                header_box.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.bg_display_item_movie));
+        }
     }
 
     private void fadeInActivity() {
@@ -118,6 +139,8 @@ public class DisplayItemActivity extends AppCompatActivity {
     }
 
     private void loadViews() {
+        header_box = (RelativeLayout) findViewById(R.id.display_item_box_header);
+
         title = (TextView) findViewById(R.id.display_item_title);
         overview = (TextView) findViewById(R.id.display_item_overview);
         vote_avg = (TextView) findViewById(R.id.display_item_vote_avg);
@@ -230,6 +253,8 @@ public class DisplayItemActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Multi item) {
             if (item != null) {
+                setColorType(type);
+
                 title.setText(getDATA_TITLE());
                 overview.setText(getDATA_OVERVIEW());
                 vote_avg.setText(String.format(Locale.FRANCE, "%.1f", getDATA_VOTE_AVG()));
@@ -274,7 +299,7 @@ public class DisplayItemActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.toolbar_menu, menu);
+        getMenuInflater().inflate(R.menu.toolbar_display_item_menu, menu);
         return true;
     }
 

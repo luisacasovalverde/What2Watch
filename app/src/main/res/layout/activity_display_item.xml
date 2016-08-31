@@ -49,9 +49,9 @@
         android:id="@+id/display_item_nested"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/bg_white_content"
+        android:background="@color/bg_darkwhite_content"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <include layout="@layout/content_movie" />
+        <include layout="@layout/content_item" />
     </android.support.v4.widget.NestedScrollView>
 </android.support.design.widget.CoordinatorLayout>

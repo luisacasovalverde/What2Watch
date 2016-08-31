@@ -48,14 +48,14 @@ public class MainFragment extends Fragment {
         View layout = inflater.inflate(R.layout.fragment_main, container, false);
 
 
-        switch (getOption()) {
+/*        switch (getOption()) {
             case R.id.nav_item_home:
                 Toast.makeText(getActivity(), "INICIO", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.nav_item_ajustes:
                 Toast.makeText(getActivity(), "AJUSTES", Toast.LENGTH_SHORT).show();
                 break;
-        }
+        }*/
 
 
         return layout;

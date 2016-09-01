@@ -1,6 +1,7 @@
-<?xml version="1.0" encoding="utf-8"?><!--<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:layout_margin="2.5dp"
     android:adjustViewBounds="true"
     android:orientation="vertical">
@@ -10,48 +11,59 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:adjustViewBounds="true"
-        android:background="@drawable/shadow_poster_img"
+        android:background="@drawable/bg_multi_item_img"
         android:contentDescription="@string/attr_img_multi_item"
-        android:padding="0.5dp" />
+        android:paddingBottom="0dp"
+        android:paddingLeft="0.5dp"
+        android:paddingRight="0.5dp"
+        android:paddingTop="0.5dp" />
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="75dp"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/multi_item_img"
-        android:background="#0277bd"
+        android:layout_marginTop="-2dp"
+        android:background="@drawable/bg_multi_item_info"
         android:orientation="horizontal"
-        android:padding="5dp">
+        android:paddingBottom="10dp"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp"
+        android:paddingTop="5dp">
 
         <TextView
-            android:id="@+id/textView"
+            android:id="@+id/multi_item_top"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLength="35"
+            android:maxLines="2"
+            android:text="01234567890"
+            android:textColor="#e0000000"
+            android:textSize="15dp" />
+
+        <TextView
+            android:id="@+id/multi_item_bottom"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="New Text" />
-
-        <TextView
-            android:id="@+id/textView2"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:text="7.7"
-            android:background="@drawable/bg_score_rounded"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
-            android:textColor="#ffffff"
-            android:gravity="center_vertical|center_horizontal" />
+            android:layout_below="@+id/multi_item_top"
+            android:text="New Text"
+            android:textColor="#80000000"
+            android:textSize="12dp" />
 
     </RelativeLayout>
 
-</RelativeLayout>-->
+</RelativeLayout>
 
-<ImageView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/multi_item_img"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_margin="2.5dp"
-    android:adjustViewBounds="true"
-    android:contentDescription="@string/attr_img_multi_item"
-    android:padding="0.5dp"
-    android:clickable="true" />
+    <!--
+    <ImageView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/multi_item_img"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="2.5dp"
+        android:adjustViewBounds="true"
+        android:contentDescription="@string/attr_img_multi_item"
+        android:padding="0.5dp"
+        android:clickable="true" />
+    -->

@@ -1,7 +1,12 @@
 package com.disainin.what2watch;
 
 import android.content.Intent;
-import android.graphics.Color;
+import android.graphics.Bitmap;
+import android.graphics.BitmapShader;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.RectF;
+import android.graphics.Shader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -9,9 +14,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Transformation;
 
 import java.util.List;
 
@@ -29,13 +34,15 @@ public class MultiAdapter extends RecyclerView.Adapter<MultiAdapter.MyViewHolder
     public class MyViewHolder extends RecyclerView.ViewHolder {
 
         private ImageView multi_item_img;
-        private TextView multi_item_headtext, multi_item_middletext, multi_item_score;
+        private TextView multi_item_title, multi_item_date;
 //        private RelativeLayout layout_item_recyclerview;
 
         public MyViewHolder(View view) {
             super(view);
 
             multi_item_img = (ImageView) view.findViewById(R.id.multi_item_img);
+            multi_item_title = (TextView) view.findViewById(R.id.multi_item_top);
+            multi_item_date = (TextView) view.findViewById(R.id.multi_item_bottom);
 //            layout_item_recyclerview = (RelativeLayout) view.findViewById(R.id.layout_item_recyclerview);
         }
     }
@@ -100,6 +107,9 @@ public class MultiAdapter extends RecyclerView.Adapter<MultiAdapter.MyViewHolder
                 MovieDb movie = (MovieDb) item;
                 POSTER_PATH = movie.getPosterPath();
 
+                holder.multi_item_title.setText(movie.getTitle());
+                holder.multi_item_date.setText(movie.getReleaseDate().substring(0, 4));
+
                 break;
 //                    case 1:
 //                        Person person = (Person) items;
@@ -107,14 +117,44 @@ public class MultiAdapter extends RecyclerView.Adapter<MultiAdapter.MyViewHolder
             case 2:
                 TvSeries serie = (TvSeries) item;
                 POSTER_PATH = serie.getPosterPath();
+
+                holder.multi_item_title.setText(serie.getName());
+                holder.multi_item_date.setText(serie.getFirstAirDate().substring(0, 4));
+
                 break;
         }
 
-        Picasso.with(holder.multi_item_img.getContext()).load(URL_BASE + URL_DIMENSION_IMG + POSTER_PATH).into(holder.multi_item_img, new com.squareup.picasso.Callback() {
+        Picasso.with(holder.multi_item_img.getContext()).load(URL_BASE + URL_DIMENSION_IMG + POSTER_PATH).transform(new Transformation() {
+
+            private final int radius = 2;
+            private final int margin = 0;
+
+            @Override
+            public Bitmap transform(final Bitmap source) {
+                final Paint paint = new Paint();
+                paint.setAntiAlias(true);
+                paint.setShader(new BitmapShader(source, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP));
+
+                Bitmap output = Bitmap.createBitmap(source.getWidth(), source.getHeight(), Bitmap.Config.ARGB_8888);
+                Canvas canvas = new Canvas(output);
+                canvas.drawRoundRect(new RectF(margin, margin, source.getWidth() - margin, source.getHeight() - margin), radius, radius, paint);
+
+                if (source != output) {
+                    source.recycle();
+                }
+
+                return output;
+            }
+
+            @Override
+            public String key() {
+                return "rounded";
+            }
+        }).into(holder.multi_item_img, new com.squareup.picasso.Callback() {
             @Override
             public void onSuccess() {
-//                holder.multi_item_img.setBackgroundResource(R.drawable.shadow_poster_img);
-                holder.multi_item_img.setBackgroundColor(Color.argb(20, 0, 0, 0));
+//                holder.multi_item_img.setBackgroundResource(R.drawable.rounded_multi_item_img);
+//                holder.multi_item_img.setBackgroundColor(Color.argb(20, 0, 0, 0));
             }
 
             @Override

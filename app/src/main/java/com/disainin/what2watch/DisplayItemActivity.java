@@ -36,6 +36,7 @@ public class DisplayItemActivity extends AppCompatActivity {
 
 
     private String LANG = Common.DEVICE_LANG, POSTER_PATH_ORIGINAL, BACKDROP_PATH_ORIGINAL, BASE_PATH_IMG = null;
+    private final int IMG_WIDTH = 500;
     private ImageView header_img;
     private RelativeLayout header_box;
     private NestedScrollView display_item_nested;
@@ -54,9 +55,13 @@ public class DisplayItemActivity extends AppCompatActivity {
             finish();
         } else {
 
-            BASE_PATH_IMG = Utility.getConfigurationTMDBAPI(getApplicationContext()).getSecureBaseUrl();
-            if (BASE_PATH_IMG == null) {
-                //AQUI PONER UNA IMAGEN PLACEHOLDER EN LA CABECERA
+
+            try {
+                BASE_PATH_IMG = Utility.getConfigurationTMDBAPI(getApplicationContext()).getSecureBaseUrl();
+            } catch (NullPointerException e) {
+                if (BASE_PATH_IMG == null) {
+                    //AQUI PONER UNA IMAGEN PLACEHOLDER EN LA CABECERA
+                }
             }
 
             toolbar = (Toolbar) findViewById(R.id.toolbar_display_item);
@@ -123,6 +128,7 @@ public class DisplayItemActivity extends AppCompatActivity {
         collapsing = (CollapsingToolbarLayout) findViewById(R.id.display_item_collapsing);
 //        collapsing.setContentScrimColor(ContextCompat.getColor(getApplicationContext(), R.color.bg_item_recyclerview_serie));
         appbar = (AppBarLayout) findViewById(R.id.display_item_appbar);
+        appbar.setExpanded(true);
     }
 
     private void loadActionsToolbar() {
@@ -152,9 +158,7 @@ public class DisplayItemActivity extends AppCompatActivity {
 
 
     private class ItemImagesTaskTMDBAPI extends AsyncTask<Integer, Integer, List<Artwork>> {
-
         int type;
-
 
         public ItemImagesTaskTMDBAPI(int type) {
             this.type = type;
@@ -186,7 +190,7 @@ public class DisplayItemActivity extends AppCompatActivity {
             } else {
                 path = POSTER_PATH_ORIGINAL;
 
-                if (type == 2) {
+                if (type == 2 && BACKDROP_PATH_ORIGINAL != null) {
                     path = BACKDROP_PATH_ORIGINAL;
                 }
             }
@@ -195,10 +199,10 @@ public class DisplayItemActivity extends AppCompatActivity {
 
             }
 
-            Picasso.with(getApplicationContext()).load(BASE_PATH_IMG + "w600" + path).into(header_img, new com.squareup.picasso.Callback() {
+            Picasso.with(getApplicationContext()).load(BASE_PATH_IMG + "w" + IMG_WIDTH + path).into(header_img, new com.squareup.picasso.Callback() {
                 @Override
                 public void onSuccess() {
-                    fadeInActivity();
+//                    fadeInActivity();
                 }
 
                 @Override
@@ -239,6 +243,7 @@ public class DisplayItemActivity extends AppCompatActivity {
                     TmdbTV series = new TmdbApi("1947a2516ec6cb3cf97ef1da21fdaa87").getTvSeries();
                     TvSeries serie = series.getSeries(code[0], LANG);
 
+
                     setDATA_TITLE(serie.getName());
                     setDATA_OVERVIEW(serie.getOverview());
                     setDATA_RELEASE_DATE(serie.getFirstAirDate());
@@ -257,9 +262,19 @@ public class DisplayItemActivity extends AppCompatActivity {
 
                 title.setText(getDATA_TITLE());
                 overview.setText(getDATA_OVERVIEW());
-                vote_avg.setText(String.format(Locale.FRANCE, "%.1f", getDATA_VOTE_AVG()));
+                vote_avg.setText(setIfScoreInt(getDATA_VOTE_AVG()));
                 release_date.setText(getDATA_RELEASE_DATE().substring(0, 4));
+
+                fadeInActivity();
             }
+        }
+
+        private String setIfScoreInt(float n) {
+            if (n == (int) n) {
+                return String.format(Locale.FRANCE, "%.0f", n);
+            }
+
+            return String.format(Locale.FRANCE, "%.1f", n);
         }
 
 

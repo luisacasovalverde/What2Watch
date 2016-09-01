@@ -16,8 +16,7 @@
             android:layout_height="wrap_content"
             android:text="New Text"
             android:textColor="#ffffff"
-            android:textSize="22sp"
-            android:textStyle="bold" />
+            android:textSize="24sp" />
 
         <TextView
             android:id="@+id/display_item_release_date"

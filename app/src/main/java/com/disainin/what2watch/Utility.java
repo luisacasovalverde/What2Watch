@@ -1,13 +1,21 @@
 package com.disainin.what2watch;
 
 import android.content.Context;
-import android.graphics.drawable.Drawable;
+import android.graphics.Bitmap;
+import android.graphics.BitmapShader;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.RectF;
+import android.graphics.Shader;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.util.DisplayMetrics;
+import android.widget.ImageView;
 import android.widget.Toast;
+
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Transformation;
 
 import info.movito.themoviedbapi.model.config.TmdbConfiguration;
 
@@ -40,5 +48,43 @@ public class Utility {
         }
 
         return null;
+    }
+
+    public static void getImageRounded(Context context, String url, final int r, final int m, ImageView img, Integer placeholder) {
+
+        Picasso.with(context).load(url).placeholder(placeholder).transform(new Transformation() {
+            private final int radius = r;
+            private final int margin = m;
+
+            @Override
+            public Bitmap transform(final Bitmap source) {
+                final Paint paint = new Paint();
+                paint.setAntiAlias(true);
+                paint.setShader(new BitmapShader(source, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP));
+
+                Bitmap output = Bitmap.createBitmap(source.getWidth(), source.getHeight(), Bitmap.Config.ARGB_8888);
+                Canvas canvas = new Canvas(output);
+                canvas.drawRoundRect(new RectF(margin, margin, source.getWidth() - margin, source.getHeight() - margin), radius, radius, paint);
+
+                if (source != output) {
+                    source.recycle();
+                }
+
+                return output;
+            }
+
+            @Override
+            public String key() {
+                return "rounded";
+            }
+        }).into(img, new com.squareup.picasso.Callback() {
+            @Override
+            public void onSuccess() {
+            }
+
+            @Override
+            public void onError() {
+            }
+        });
     }
 }

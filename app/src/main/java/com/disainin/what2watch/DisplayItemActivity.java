@@ -2,13 +2,17 @@ package com.disainin.what2watch;
 
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -25,16 +29,19 @@ import java.util.Random;
 
 import info.movito.themoviedbapi.TmdbApi;
 import info.movito.themoviedbapi.TmdbMovies;
+import info.movito.themoviedbapi.TmdbPeople;
 import info.movito.themoviedbapi.TmdbTV;
 import info.movito.themoviedbapi.model.Artwork;
 import info.movito.themoviedbapi.model.MovieDb;
 import info.movito.themoviedbapi.model.MovieImages;
 import info.movito.themoviedbapi.model.Multi;
+import info.movito.themoviedbapi.model.people.PersonCast;
+import info.movito.themoviedbapi.model.people.PersonPeople;
 import info.movito.themoviedbapi.model.tv.TvSeries;
 
 public class DisplayItemActivity extends AppCompatActivity {
 
-
+    private List<PersonPeople> personas;
     private String LANG = Common.DEVICE_LANG, POSTER_PATH_ORIGINAL, BACKDROP_PATH_ORIGINAL, BASE_PATH_IMG = null;
     private final int IMG_WIDTH = 500;
     private ImageView header_img;
@@ -45,6 +52,8 @@ public class DisplayItemActivity extends AppCompatActivity {
     private AppBarLayout appbar;
     private TextView title, overview, vote_avg, release_date;
     private Toolbar toolbar;
+    private boolean INCOMMING_SEARCH;
+    private RecyclerView display_item_recyclerview_people;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,19 +81,20 @@ public class DisplayItemActivity extends AppCompatActivity {
 
             final Intent openingMovie = getIntent();
             Bundle bundle = openingMovie.getExtras();
+
+            INCOMMING_SEARCH = bundle.getBoolean("display_item_search");
+
             POSTER_PATH_ORIGINAL = bundle.getString("display_item_poster_path");
             BACKDROP_PATH_ORIGINAL = bundle.getString("display_item_backdrop_path");
 
 
             new ItemImagesTaskTMDBAPI(bundle.getInt("display_item_type")).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, bundle.getInt("display_item_id"));
-            new MovieTaskTMDBAPI(bundle.getInt("display_item_type")).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, bundle.getInt("display_item_id"));
+            new ItemTaskTMDBAPI(bundle.getInt("display_item_type")).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, bundle.getInt("display_item_id"));
 
             loadViewsToolbar();
             loadActionsToolbar();
 
             loadViews();
-
-
         }
 
     }
@@ -154,6 +164,13 @@ public class DisplayItemActivity extends AppCompatActivity {
 
         display_item_nested = (NestedScrollView) findViewById(R.id.display_item_nested);
         display_item_nested.setVisibility(View.GONE);
+
+        display_item_recyclerview_people = (RecyclerView) findViewById(R.id.display_item_people);
+
+        display_item_recyclerview_people.setHasFixedSize(true);
+        display_item_recyclerview_people.setLayoutManager(new GridLayoutManager(this, 1, GridLayoutManager.HORIZONTAL, false));
+//        display_item_recyclerview_people.setLayoutManager(new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.HORIZONTAL, false));
+        display_item_recyclerview_people.setItemAnimator(new DefaultItemAnimator());
     }
 
 
@@ -213,13 +230,15 @@ public class DisplayItemActivity extends AppCompatActivity {
         }
     }
 
-    private class MovieTaskTMDBAPI extends AsyncTask<Integer, Integer, Multi> {
+    private class ItemTaskTMDBAPI extends AsyncTask<Integer, Integer, Multi> {
 
-        int type;
-        float DATA_VOTE_AVG;
-        String DATA_TITLE, DATA_OVERVIEW, DATA_RELEASE_DATE;
+        private int type;
+        private float DATA_VOTE_AVG;
+        private String DATA_TITLE, DATA_OVERVIEW, DATA_RELEASE_DATE;
+        private List<PersonCast> LIST_CAST;
 
-        public MovieTaskTMDBAPI(int type) {
+
+        public ItemTaskTMDBAPI(int type) {
             this.type = type;
         }
 
@@ -234,20 +253,47 @@ public class DisplayItemActivity extends AppCompatActivity {
                     MovieDb movie = movies.getMovie(code[0], LANG);
 
                     setDATA_TITLE(movie.getTitle());
-                    setDATA_OVERVIEW(movie.getOverview());
-                    setDATA_RELEASE_DATE(movie.getReleaseDate());
+                    if (movie.getOverview() == null || movie.getOverview().equals("")) {
+                        setDATA_OVERVIEW(getString(R.string.warning_no_lang_overview));
+                    } else {
+                        setDATA_OVERVIEW(movie.getOverview());
+                    }
+                    setDATA_RELEASE_DATE(movie.getReleaseDate().substring(0, 4));
                     setDATA_VOTE_AVG(movie.getVoteAverage());
+                    setLIST_CAST(movies.getCredits(code[0]).getCast());
 
                     return movie;
+                case 1:
+                    TmdbPeople people = new TmdbApi("1947a2516ec6cb3cf97ef1da21fdaa87").getPeople();
+                    PersonPeople person = people.getPersonInfo(code[0], LANG);
+
+                    setDATA_TITLE(person.getName());
+                    setDATA_OVERVIEW("");
+//                    if (person.getBiography() == null || person.getBiography().equals("")) {
+//                        setDATA_OVERVIEW(getString(R.string.warning_no_lang_overview));
+//                    } else {
+//                        setDATA_OVERVIEW(person.getBiography());
+//                    }
+
+                    setDATA_RELEASE_DATE("");
+                    setDATA_VOTE_AVG(-1);
+
+                    return person;
                 case 2:
                     TmdbTV series = new TmdbApi("1947a2516ec6cb3cf97ef1da21fdaa87").getTvSeries();
                     TvSeries serie = series.getSeries(code[0], LANG);
 
-
                     setDATA_TITLE(serie.getName());
-                    setDATA_OVERVIEW(serie.getOverview());
-                    setDATA_RELEASE_DATE(serie.getFirstAirDate());
+
+                    if (serie.getOverview() == null || serie.getOverview().equals("")) {
+                        setDATA_OVERVIEW(getString(R.string.warning_no_lang_overview));
+                    } else {
+                        setDATA_OVERVIEW(serie.getOverview());
+                    }
+
+                    setDATA_RELEASE_DATE(serie.getFirstAirDate().substring(0, 4));
                     setDATA_VOTE_AVG(serie.getVoteAverage());
+                    setLIST_CAST(series.getCredits(code[0], LANG).getCast());
 
                     return serie;
             }
@@ -263,7 +309,28 @@ public class DisplayItemActivity extends AppCompatActivity {
                 title.setText(getDATA_TITLE());
                 overview.setText(getDATA_OVERVIEW());
                 vote_avg.setText(setIfScoreInt(getDATA_VOTE_AVG()));
-                release_date.setText(getDATA_RELEASE_DATE().substring(0, 4));
+                release_date.setText(getDATA_RELEASE_DATE());
+
+//                if (type == 1) {
+//                    SimpleDateFormat to = new SimpleDateFormat("dd/MM/yyyy");
+//                    SimpleDateFormat from = new SimpleDateFormat("yyyy-MM-dd");
+//
+//                    try {
+//                        release_date.setText(to.format(from.parse(getDATA_RELEASE_DATE())));
+//                    } catch (ParseException e) {
+//                        e.printStackTrace();
+//                    }
+//                } else {
+//                    release_date.setText(getDATA_RELEASE_DATE().substring(0, 4));
+//                }
+
+
+                if (type != 1) {
+                    CastAdapterTMDBAPI mAdapter = new CastAdapterTMDBAPI(getLIST_CAST(), DisplayItemActivity.this);
+                    display_item_recyclerview_people.setAdapter(mAdapter);
+                    mAdapter.notifyDataSetChanged();
+                }
+
 
                 fadeInActivity();
             }
@@ -271,12 +338,23 @@ public class DisplayItemActivity extends AppCompatActivity {
 
         private String setIfScoreInt(float n) {
             if (n == (int) n) {
+                if (n < 0) {
+                    return "";
+                }
+
                 return String.format(Locale.FRANCE, "%.0f", n);
             }
 
             return String.format(Locale.FRANCE, "%.1f", n);
         }
 
+        public List<PersonCast> getLIST_CAST() {
+            return LIST_CAST;
+        }
+
+        public void setLIST_CAST(List<PersonCast> LIST_CAST) {
+            this.LIST_CAST = LIST_CAST;
+        }
 
         public float getDATA_VOTE_AVG() {
             return DATA_VOTE_AVG;
@@ -311,6 +389,14 @@ public class DisplayItemActivity extends AppCompatActivity {
         }
     }
 
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        if (INCOMMING_SEARCH) {
+            menu.findItem(R.id.action_search).setVisible(false);
+        }
+        return super.onPrepareOptionsMenu(menu);
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

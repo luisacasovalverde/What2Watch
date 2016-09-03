@@ -10,6 +10,7 @@
     <string name="general_share">Compartir</string>
 
     <string name="warning_no_connection">Es necesario estar conectado a internet</string>
+    <string name="warning_no_lang_overview">La sinopsis no está disponible en español. Disculpa las molestias.</string>
 
     <string name="bv_vacio"></string>
     <string name="bv_escuchando">Escuchando...</string>

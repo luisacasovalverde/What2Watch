@@ -28,6 +28,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -38,6 +39,7 @@ import info.movito.themoviedbapi.TmdbApi;
 import info.movito.themoviedbapi.TmdbSearch;
 import info.movito.themoviedbapi.model.MovieDb;
 import info.movito.themoviedbapi.model.Multi;
+import info.movito.themoviedbapi.model.people.PersonPeople;
 import info.movito.themoviedbapi.model.tv.TvSeries;
 
 public class BuscarActivity extends AppCompatActivity implements RecognitionListener {
@@ -57,7 +59,7 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
             R.string.bv_error_desconexion, //3
     };
     private RecyclerView recyclerview_buscar;
-    private MultiAdapter mAdapter;
+    private MultiAdapterTMDBAPI mAdapter;
     private int totalPagesResults = 0, actualPageResults;
 
     @Override
@@ -119,8 +121,16 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
 
                             break;
                         case 1:
-//                        Person person = (Person) item;
-                            i.remove(); //cuando se pueda implementar, poner las limitaciones oportunas
+                            PersonPeople person = (PersonPeople) item;
+//                            if ((person.getName() == null || person.getName().equals(""))
+//                                    || (person.getProfilePath() == null || person.getProfilePath().equals(""))) {
+//                                i.remove();
+//                            }
+
+                            if ((person.getName() == null || person.getName().equals(""))) {
+                                i.remove();
+                            }
+
                             break;
                         case 2:
                             TvSeries serie = (TvSeries) item;
@@ -137,7 +147,6 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
 
 
                 return todo.getResults();
-//                return r.searchMulti(query[0], "es", 1).getResults();
             } catch (RuntimeException e) {
                 if (!isNetworkConnected()) {
                     Snackbar snackbar = Snackbar
@@ -166,7 +175,7 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
 
 
                 if (results.size() > 0) {
-                    mAdapter = new MultiAdapter(results, BuscarActivity.this);
+                    mAdapter = new MultiAdapterTMDBAPI(results, BuscarActivity.this);
                     recyclerview_buscar.setAdapter(mAdapter);
                     mAdapter.notifyDataSetChanged();
                 } else {

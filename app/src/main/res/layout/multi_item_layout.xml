@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/multi_item_layout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="2.5dp"
@@ -39,18 +40,18 @@
             android:ellipsize="end"
             android:maxLength="35"
             android:maxLines="2"
-            android:text="01234567890"
             android:textColor="#e0000000"
-            android:textSize="15dp" />
+            android:textSize="15sp" />
 
         <TextView
             android:id="@+id/multi_item_bottom"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/multi_item_top"
-            android:text="New Text"
+            android:ellipsize="end"
+            android:maxLines="1"
             android:textColor="#80000000"
-            android:textSize="12dp" />
+            android:textSize="12sp" />
 
     </RelativeLayout>
 

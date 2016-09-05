@@ -1,10 +1,8 @@
 package com.disainin.what2watch;
 
 import android.content.Intent;
-import android.graphics.Point;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
-import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,16 +12,13 @@ import android.widget.TextView;
 
 import java.util.List;
 
-import info.movito.themoviedbapi.model.MovieDb;
-import info.movito.themoviedbapi.model.Multi;
 import info.movito.themoviedbapi.model.people.PersonCast;
-import info.movito.themoviedbapi.model.people.PersonPeople;
-import info.movito.themoviedbapi.model.tv.TvSeries;
 
 public class CastAdapterTMDBAPI extends RecyclerView.Adapter<CastAdapterTMDBAPI.MyViewHolder> {
 
     private List<PersonCast> items;
     private AppCompatActivity activity;
+    private int WIDTH = 250, HEIGHT = 250;
     private String URL_DIMENSION_IMG = "w264_and_h264_bestv2", URL_BASE = "https://image.tmdb.org/t/p/";
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
@@ -40,7 +35,7 @@ public class CastAdapterTMDBAPI extends RecyclerView.Adapter<CastAdapterTMDBAPI.
             multi_item_layout = (RelativeLayout) view.findViewById(R.id.multi_item_layout);
 
 
-            RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams((250), RelativeLayout.LayoutParams.WRAP_CONTENT);
+            RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(WIDTH, RelativeLayout.LayoutParams.WRAP_CONTENT);
             lp.rightMargin = 10;
 
             multi_item_layout.setLayoutParams(lp);
@@ -69,7 +64,7 @@ public class CastAdapterTMDBAPI extends RecyclerView.Adapter<CastAdapterTMDBAPI.
         holder.multi_item_top.setText(person.getName());
         holder.multi_item_bottom.setText(person.getCharacter());
 
-        Utility.getImageRounded(activity.getApplicationContext(), URL_BASE + URL_DIMENSION_IMG + person.getProfilePath(), 2, 0, holder.multi_item_img, R.drawable.ic_placeholder_profile_w240_h240);
+        Utility.getImageRounded(activity.getApplicationContext(), URL_BASE + URL_DIMENSION_IMG + person.getProfilePath(), 2, 0, holder.multi_item_img, R.drawable.ic_placeholder_profile_w264_h264);
 
         holder.multi_item_layout.setOnClickListener(new View.OnClickListener() {
             int CODE;

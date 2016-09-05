@@ -5,12 +5,15 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapShader;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.graphics.RectF;
 import android.graphics.Shader;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.util.DisplayMetrics;
+import android.view.Display;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -86,5 +89,33 @@ public class Utility {
             public void onError() {
             }
         });
+    }
+
+    public static int getDeviceWidth(Context context) {
+        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        Point size = new Point();
+        wm.getDefaultDisplay().getSize(size);
+
+        return size.x;
+    }
+
+    public static int getDeviceHeight(Context context) {
+        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        Point size = new Point();
+        wm.getDefaultDisplay().getSize(size);
+
+        return size.y;
+    }
+
+    public static int getDeviceDpi(Context context) {
+        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        DisplayMetrics metrics = new DisplayMetrics();
+        wm.getDefaultDisplay().getMetrics(metrics);
+
+        return metrics.densityDpi;
+    }
+
+    public static int getColumnsFromWidth(Context context) {
+        return Math.round(Utility.getDeviceWidth(context) / (float) Utility.getDeviceDpi(context));
     }
 }

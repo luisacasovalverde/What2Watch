@@ -265,7 +265,7 @@ public class DisplayItemActivity extends AppCompatActivity {
                     return movie;
                 case 1:
                     TmdbPeople people = new TmdbApi("1947a2516ec6cb3cf97ef1da21fdaa87").getPeople();
-                    PersonPeople person = people.getPersonInfo(code[0], LANG);
+                    PersonPeople person = people.getPersonInfo(code[0], null);
 
                     setDATA_TITLE(person.getName());
                     setDATA_OVERVIEW("");

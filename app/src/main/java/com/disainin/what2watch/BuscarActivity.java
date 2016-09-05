@@ -3,6 +3,7 @@ package com.disainin.what2watch;
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.graphics.Point;
 import android.graphics.Typeface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -19,6 +20,9 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.DisplayMetrics;
+import android.util.Log;
+import android.view.Display;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -29,6 +33,8 @@ import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import org.slf4j.helpers.Util;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -69,6 +75,43 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
 
         loadViews();
         loadActions();
+        info();
+    }
+
+
+    private void info() {
+        // display size in pixels
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        int width = size.x;
+        int height = size.y;
+        Log.i("PANTALLA", "width        = " + width);
+        Log.i("PANTALLA", "height       = " + height);
+
+// pixels, dpi
+        DisplayMetrics metrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        int heightPixels = metrics.heightPixels;
+        int widthPixels = metrics.widthPixels;
+        int densityDpi = metrics.densityDpi;
+        float xdpi = metrics.xdpi;
+        float ydpi = metrics.ydpi;
+        Log.i("PANTALLA", "widthPixels  = " + widthPixels);
+        Log.i("PANTALLA", "heightPixels = " + heightPixels);
+        Log.i("PANTALLA", "densityDpi   = " + densityDpi);
+        Log.i("PANTALLA", "xdpi         = " + xdpi);
+        Log.i("PANTALLA", "ydpi         = " + ydpi);
+
+// deprecated
+        int screenHeight = display.getHeight();
+        int screenWidth = display.getWidth();
+        Log.i("PANTALLA", "screenHeight = " + screenHeight);
+        Log.i("PANTALLA", "screenWidth  = " + screenWidth);
+
+// orientation (either ORIENTATION_LANDSCAPE, ORIENTATION_PORTRAIT)
+        int orientation = getResources().getConfiguration().orientation;
+        Log.i("PANTALLA", "orientation  = " + orientation);
     }
 
 
@@ -299,7 +342,10 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
 //        recyclerview_buscar.setLayoutManager(mLayoutManager);
 
         recyclerview_buscar.setHasFixedSize(true);
-        recyclerview_buscar.setLayoutManager(new GridLayoutManager(this, Utility.calculateNoOfColumns(getApplicationContext(), 100)));
+//        recyclerview_buscar.setLayoutManager(new GridLayoutManager(this, Utility.calculateNoOfColumns(getApplicationContext(), 255)));
+
+
+        recyclerview_buscar.setLayoutManager(new GridLayoutManager(this, Utility.getColumnsFromWidth(getApplicationContext())));
         recyclerview_buscar.setItemAnimator(new DefaultItemAnimator());
 
         recyclerview_buscar.setAdapter(mAdapter);

@@ -50,7 +50,7 @@
             android:layout_below="@+id/multi_item_top"
             android:ellipsize="end"
             android:maxLines="1"
-            android:textColor="#80000000"
+            android:textColor="#60000000"
             android:textSize="12sp" />
 
     </RelativeLayout>

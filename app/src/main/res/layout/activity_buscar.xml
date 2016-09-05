@@ -144,7 +144,8 @@
         android:focusable="false"
         android:focusableInTouchMode="false"
         android:paddingLeft="7.5dp"
-        android:paddingRight="7.5dp" />
+        android:paddingRight="7.5dp"
+        android:paddingBottom="7.5dp" />
 
 
     <TextView

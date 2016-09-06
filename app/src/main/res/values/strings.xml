@@ -13,9 +13,9 @@
     <string name="warning_no_lang_overview">La sinopsis no está disponible en español. Disculpa las molestias.</string>
 
     <string name="bv_vacio"></string>
-    <string name="bv_escuchando">Escuchando...</string>
-    <string name="bv_reconociendo">Reconociendo...</string>
-    <string name="bv_error_desconexion">No hay conexión...</string>
+    <string name="bv_escuchando">Escuchando…</string>
+    <string name="bv_reconociendo">Reconociendo…</string>
+    <string name="bv_error_desconexion">No hay conexión…</string>
     <string name="bv_no_results">No hay resultados</string>
 
     <string name="fa_mic">&#xf130;</string>
@@ -28,4 +28,6 @@
     <string name="attr_img_back">Ir atrás</string>
     <string name="attr_img_multi_item">Posters de los resultados de búsqueda</string>
     <string name="attr_img_display_item">Posters de los items a consultar</string>
+
+    <string name="permission_record_audio">¡Es necesario permitir el uso del micrófono!</string>
 </resources>

@@ -1,6 +1,7 @@
 package com.disainin.what2watch;
 
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -46,6 +47,8 @@ public class CastAdapterTMDBAPI extends RecyclerView.Adapter<CastAdapterTMDBAPI.
     public CastAdapterTMDBAPI(List items, AppCompatActivity activity) {
         this.items = items;
         this.activity = activity;
+
+        this.WIDTH = Utility.getWidthSizeColumns(activity.getApplicationContext(), 2.8f);
     }
 
 

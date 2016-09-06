@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -7,6 +8,7 @@
         android:id="@+id/display_item_box_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
         android:background="#0277bd"
         android:padding="15dp">
 
@@ -82,20 +84,15 @@
         android:layout_below="@+id/display_item_box_info"
         android:background="@drawable/shadow_toolbar" />
 
-
-    <ScrollView
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/display_item_people"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_below="@+id/toolbar_shadow"
-        android:layout_marginTop="15dp">
-
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/display_item_people"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:focusable="false"
-            android:focusableInTouchMode="false"
-            android:padding="7.5dp" />
-    </ScrollView>
+        android:layout_marginTop="15dp"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        android:padding="7.5dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
 </RelativeLayout>

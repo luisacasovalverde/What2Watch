@@ -21,7 +21,7 @@ public class MultiAdapterTMDBAPI extends RecyclerView.Adapter<MultiAdapterTMDBAP
 
     private List<Multi> items;
     private AppCompatActivity activity;
-    private String URL_DIMENSION_IMG = "w150_and_h225_bestv2", URL_BASE = "https://image.tmdb.org/t/p/";
+    private String URL_DIMENSION_IMG = "w300_and_h450_bestv2", URL_BASE = "https://image.tmdb.org/t/p/";
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
         private ImageView multi_item_img;
@@ -138,42 +138,47 @@ public class MultiAdapterTMDBAPI extends RecyclerView.Adapter<MultiAdapterTMDBAP
 
             @Override
             public void onClick(View view) {
-                switch (item.getMediaType().ordinal()) {
-                    case 0:
-                        MovieDb movie = (MovieDb) item;
-                        CODE = movie.getId();
-                        IMG_PRIMARY_PATH = movie.getPosterPath();
-                        IMG_SECONDARY_PATH = movie.getBackdropPath();
-                        break;
-                    case 1:
-                        PersonPeople person = (PersonPeople) item;
-                        CODE = person.getId();
-                        IMG_PRIMARY_PATH = person.getProfilePath();
-                        IMG_SECONDARY_PATH = null;
-                        break;
-                    case 2:
-                        TvSeries serie = (TvSeries) item;
-                        CODE = serie.getId();
-                        IMG_PRIMARY_PATH = serie.getPosterPath();
-                        IMG_SECONDARY_PATH = serie.getBackdropPath();
-                        break;
+                try {
+                    switch (item.getMediaType().ordinal()) {
+                        case 0:
+                            MovieDb movie = (MovieDb) item;
+                            CODE = movie.getId();
+                            IMG_PRIMARY_PATH = movie.getPosterPath();
+                            IMG_SECONDARY_PATH = movie.getBackdropPath();
+                            break;
+                        case 1:
+                            PersonPeople person = (PersonPeople) item;
+                            CODE = person.getId();
+                            IMG_PRIMARY_PATH = person.getProfilePath();
+                            IMG_SECONDARY_PATH = null;
+                            break;
+                        case 2:
+                            TvSeries serie = (TvSeries) item;
+                            CODE = serie.getId();
+                            IMG_PRIMARY_PATH = serie.getPosterPath();
+                            IMG_SECONDARY_PATH = serie.getBackdropPath();
+                            break;
+                    }
+
+                    Intent openItemData = new Intent(activity.getApplicationContext(), DisplayItemActivity.class);
+                    openItemData.putExtra("display_item_id", CODE);
+                    openItemData.putExtra("display_item_type", item.getMediaType().ordinal());
+
+                    openItemData.putExtra("display_item_poster_path", IMG_PRIMARY_PATH);
+                    openItemData.putExtra("display_item_backdrop_path", IMG_SECONDARY_PATH);
+
+                    if (activity instanceof BuscarActivity) {
+                        openItemData.putExtra("display_item_search", true);
+                    } else {
+                        openItemData.putExtra("display_item_search", false);
+                    }
+
+                    activity.startActivity(openItemData);
+                    activity.overridePendingTransition(R.animator.pull_right, R.animator.push_left);
+                } catch (ClassCastException ignored) {
+
                 }
 
-                Intent openItemData = new Intent(activity.getApplicationContext(), DisplayItemActivity.class);
-                openItemData.putExtra("display_item_id", CODE);
-                openItemData.putExtra("display_item_type", item.getMediaType().ordinal());
-
-                openItemData.putExtra("display_item_poster_path", IMG_PRIMARY_PATH);
-                openItemData.putExtra("display_item_backdrop_path", IMG_SECONDARY_PATH);
-
-                if (activity instanceof BuscarActivity) {
-                    openItemData.putExtra("display_item_search", true);
-                } else {
-                    openItemData.putExtra("display_item_search", false);
-                }
-
-                activity.startActivity(openItemData);
-                activity.overridePendingTransition(R.animator.pull_right, R.animator.push_left);
             }
         });
 

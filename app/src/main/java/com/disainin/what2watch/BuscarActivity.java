@@ -1,17 +1,27 @@
 package com.disainin.what2watch;
 
+import android.Manifest;
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Typeface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
+import android.os.Parcelable;
+import android.provider.Settings;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
+import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -19,6 +29,7 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
+import android.text.Layout;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -34,8 +45,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.slf4j.helpers.Util;
-
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -51,6 +61,7 @@ import info.movito.themoviedbapi.model.tv.TvSeries;
 public class BuscarActivity extends AppCompatActivity implements RecognitionListener {
 
     private boolean clear = true;
+    private List LIST_RESULTS = null;
     private String lastQuery = "";
     private ValueAnimator ColorTransitionVoicequery;
     private RelativeLayout layout_busqueda, layout_input, recyclerview_buscar_item, layout_loading_buscar;
@@ -75,45 +86,58 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
 
         loadViews();
         loadActions();
-        info();
+
+        if (getLastCustomNonConfigurationInstance() != null) {
+            mAdapter = new MultiAdapterTMDBAPI((List) getLastCustomNonConfigurationInstance(), BuscarActivity.this);
+            recyclerview_buscar.setAdapter(mAdapter);
+            mAdapter.notifyDataSetChanged();
+            LIST_RESULTS = (List) getLastCustomNonConfigurationInstance();
+        }
     }
 
 
-    private void info() {
-        // display size in pixels
-        Display display = getWindowManager().getDefaultDisplay();
-        Point size = new Point();
-        display.getSize(size);
-        int width = size.x;
-        int height = size.y;
-        Log.i("PANTALLA", "width        = " + width);
-        Log.i("PANTALLA", "height       = " + height);
+    private void verifyPermission(String permission_type) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            int writePermission = checkSelfPermission(permission_type);
 
-// pixels, dpi
-        DisplayMetrics metrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(metrics);
-        int heightPixels = metrics.heightPixels;
-        int widthPixels = metrics.widthPixels;
-        int densityDpi = metrics.densityDpi;
-        float xdpi = metrics.xdpi;
-        float ydpi = metrics.ydpi;
-        Log.i("PANTALLA", "widthPixels  = " + widthPixels);
-        Log.i("PANTALLA", "heightPixels = " + heightPixels);
-        Log.i("PANTALLA", "densityDpi   = " + densityDpi);
-        Log.i("PANTALLA", "xdpi         = " + xdpi);
-        Log.i("PANTALLA", "ydpi         = " + ydpi);
+            if (writePermission != PackageManager.PERMISSION_GRANTED) {
+                requestPermission(permission_type);
+            }
 
-// deprecated
-        int screenHeight = display.getHeight();
-        int screenWidth = display.getWidth();
-        Log.i("PANTALLA", "screenHeight = " + screenHeight);
-        Log.i("PANTALLA", "screenWidth  = " + screenWidth);
+//              else -> accion en caso de que ya tenga los permisos
 
-// orientation (either ORIENTATION_LANDSCAPE, ORIENTATION_PORTRAIT)
-        int orientation = getResources().getConfiguration().orientation;
-        Log.i("PANTALLA", "orientation  = " + orientation);
+        }
     }
 
+    private void requestPermission(String permission_type) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, permission_type)) {
+                Utility.showRequestPermissionAction(getApplicationContext(), layout_busqueda, R.string.permission_record_audio);
+            } else {
+                requestPermissions(new String[]{permission_type}, Common.PERMISSION_RECORD_AUDIO);
+            }
+        }
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == Common.PERMISSION_RECORD_AUDIO) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//                saveComments();
+                Toast.makeText(BuscarActivity.this, "PERMITIDO RECORD AUDIO", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(BuscarActivity.this, "PROHIBIDO RECORD AUDIO", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+
+    @Override
+    public Object onRetainCustomNonConfigurationInstance() {
+        return LIST_RESULTS;
+    }
 
     protected boolean isNetworkConnected() {
         try {
@@ -218,6 +242,7 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
 
 
                 if (results.size() > 0) {
+                    LIST_RESULTS = results;
                     mAdapter = new MultiAdapterTMDBAPI(results, BuscarActivity.this);
                     recyclerview_buscar.setAdapter(mAdapter);
                     mAdapter.notifyDataSetChanged();
@@ -251,11 +276,13 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
 
     private void initSpeechActions() {
         if (SpeechRecognizer.isRecognitionAvailable(getApplicationContext())) {
+            verifyPermission(Manifest.permission.RECORD_AUDIO);
             sr = SpeechRecognizer.createSpeechRecognizer(getApplicationContext());
             sr.setRecognitionListener(this);
             sr.startListening(RecognizerIntent.getVoiceDetailsIntent(getApplicationContext()));
         }
     }
+
 
     @Override
     protected void onDestroy() {
@@ -381,7 +408,7 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
     public void loadActions() {
         initTransitionVoicequery();
 
-        input_btn_voice.setTag(Boolean.valueOf(true));
+        input_btn_voice.setTag(true);
         input_btn_voice.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -586,7 +613,7 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
 
     private void setMicOn() {
         if (SpeechRecognizer.isRecognitionAvailable(getApplicationContext())) {
-            input_btn_voice.setTag(Boolean.valueOf(true));
+            input_btn_voice.setTag(true);
             txt_queryvoice.setText(getString(infoText[0]));
             txt_queryvoice.setVisibility(View.GONE);
             input_btn_voice.setImageResource(R.drawable.ic_svg_microphone);
@@ -602,7 +629,7 @@ public class BuscarActivity extends AppCompatActivity implements RecognitionList
             ColorTransitionVoicequery.start();
             setClearOffAndKeyboard();
             txt_queryvoice.setVisibility(View.VISIBLE);
-            input_btn_voice.setTag(Boolean.valueOf(false));
+            input_btn_voice.setTag(false);
             input_btn_voice.setImageResource(R.drawable.ic_svg_microphone_off);
         }
     }

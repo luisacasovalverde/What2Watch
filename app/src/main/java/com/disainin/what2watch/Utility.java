@@ -1,18 +1,25 @@
 package com.disainin.what2watch;
 
 import android.content.Context;
+import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapShader;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.RectF;
 import android.graphics.Shader;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.provider.Settings;
+import android.support.design.widget.Snackbar;
 import android.util.DisplayMetrics;
 import android.view.Display;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -27,8 +34,7 @@ public class Utility {
     public static int calculateNoOfColumns(Context context, int width) {
         DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
         float dpWidth = displayMetrics.widthPixels / displayMetrics.density;
-        int noOfColumns = (int) (dpWidth / width);
-        return noOfColumns;
+        return (int) (dpWidth / width);
     }
 
     public static boolean isNetworkConnected(Context context) {
@@ -117,5 +123,30 @@ public class Utility {
 
     public static int getColumnsFromWidth(Context context) {
         return Math.round(Utility.getDeviceWidth(context) / (float) Utility.getDeviceDpi(context));
+    }
+
+    public static void showRequestPermissionAction(final Context context, View layout, int text) {
+        Snackbar.make(layout, text, Snackbar.LENGTH_LONG)
+                .setAction(R.string.general_settings, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Intent intent = new Intent();
+                        intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                        Uri uri = Uri.fromParts("package", context.getPackageName(), null);
+                        intent.setData(uri);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+                        context.startActivity(intent);
+                    }
+                }).setActionTextColor(Color.WHITE).show();
+    }
+
+    public static int getWidthSizeColumns(Context context, float columns) {
+        if (context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            return Math.round(Utility.getDeviceWidth(context.getApplicationContext()) / columns);
+        } else {
+            return Math.round(Utility.getDeviceHeight(context.getApplicationContext()) / columns);
+        }
     }
 }

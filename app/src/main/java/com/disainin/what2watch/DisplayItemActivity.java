@@ -20,6 +20,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 
@@ -28,10 +29,12 @@ import java.util.Locale;
 import java.util.Random;
 
 import info.movito.themoviedbapi.TmdbApi;
+import info.movito.themoviedbapi.TmdbGenre;
 import info.movito.themoviedbapi.TmdbMovies;
 import info.movito.themoviedbapi.TmdbPeople;
 import info.movito.themoviedbapi.TmdbTV;
 import info.movito.themoviedbapi.model.Artwork;
+import info.movito.themoviedbapi.model.Genre;
 import info.movito.themoviedbapi.model.MovieDb;
 import info.movito.themoviedbapi.model.MovieImages;
 import info.movito.themoviedbapi.model.Multi;
@@ -64,13 +67,10 @@ public class DisplayItemActivity extends AppCompatActivity {
             finish();
         } else {
 
-
             try {
                 BASE_PATH_IMG = Utility.getConfigurationTMDBAPI(getApplicationContext()).getSecureBaseUrl();
-            } catch (NullPointerException e) {
-                if (BASE_PATH_IMG == null) {
-                    //AQUI PONER UNA IMAGEN PLACEHOLDER EN LA CABECERA
-                }
+            } catch (NullPointerException ignored) {
+
             }
 
             toolbar = (Toolbar) findViewById(R.id.toolbar_display_item);
@@ -171,6 +171,7 @@ public class DisplayItemActivity extends AppCompatActivity {
         display_item_recyclerview_people.setLayoutManager(new GridLayoutManager(this, 1, GridLayoutManager.HORIZONTAL, false));
 //        display_item_recyclerview_people.setLayoutManager(new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.HORIZONTAL, false));
         display_item_recyclerview_people.setItemAnimator(new DefaultItemAnimator());
+        display_item_recyclerview_people.setNestedScrollingEnabled(false);
     }
 
 
@@ -236,6 +237,7 @@ public class DisplayItemActivity extends AppCompatActivity {
         private float DATA_VOTE_AVG;
         private String DATA_TITLE, DATA_OVERVIEW, DATA_RELEASE_DATE;
         private List<PersonCast> LIST_CAST;
+        private List<Genre> LIST_GENRE;
 
 
         public ItemTaskTMDBAPI(int type) {
@@ -249,8 +251,15 @@ public class DisplayItemActivity extends AppCompatActivity {
         protected Multi doInBackground(Integer... code) {
             switch (type) {
                 case 0:
+
                     TmdbMovies movies = new TmdbApi("1947a2516ec6cb3cf97ef1da21fdaa87").getMovies();
                     MovieDb movie = movies.getMovie(code[0], LANG);
+//                    TmdbGenre g = new TmdbApi("1947a2516ec6cb3cf97ef1da21fdaa87").getGenre();
+//                    g.getGenreList(LANG);
+
+//                    movie.getGenres().
+
+                    setLIST_GENRE(movie.getGenres());
 
                     setDATA_TITLE(movie.getTitle());
                     if (movie.getOverview() == null || movie.getOverview().equals("")) {
@@ -265,7 +274,7 @@ public class DisplayItemActivity extends AppCompatActivity {
                     return movie;
                 case 1:
                     TmdbPeople people = new TmdbApi("1947a2516ec6cb3cf97ef1da21fdaa87").getPeople();
-                    PersonPeople person = people.getPersonInfo(code[0], null);
+                    PersonPeople person = people.getPersonInfo(code[0], (String) null);
 
                     setDATA_TITLE(person.getName());
                     setDATA_OVERVIEW("");
@@ -282,6 +291,8 @@ public class DisplayItemActivity extends AppCompatActivity {
                 case 2:
                     TmdbTV series = new TmdbApi("1947a2516ec6cb3cf97ef1da21fdaa87").getTvSeries();
                     TvSeries serie = series.getSeries(code[0], LANG);
+
+                    setLIST_GENRE(serie.getGenres());
 
                     setDATA_TITLE(serie.getName());
 
@@ -329,6 +340,12 @@ public class DisplayItemActivity extends AppCompatActivity {
                     CastAdapterTMDBAPI mAdapter = new CastAdapterTMDBAPI(getLIST_CAST(), DisplayItemActivity.this);
                     display_item_recyclerview_people.setAdapter(mAdapter);
                     mAdapter.notifyDataSetChanged();
+
+                    String sum = "";
+                    for (Genre i : getLIST_GENRE()) {
+                        sum += i.getName() + "\n";
+                    }
+                    Toast.makeText(getApplicationContext(), "" + sum, Toast.LENGTH_SHORT).show();
                 }
 
 
@@ -346,6 +363,14 @@ public class DisplayItemActivity extends AppCompatActivity {
             }
 
             return String.format(Locale.FRANCE, "%.1f", n);
+        }
+
+        public List<Genre> getLIST_GENRE() {
+            return LIST_GENRE;
+        }
+
+        public void setLIST_GENRE(List<Genre> LIST_GENRE) {
+            this.LIST_GENRE = LIST_GENRE;
         }
 
         public List<PersonCast> getLIST_CAST() {

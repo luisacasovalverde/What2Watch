@@ -11,7 +11,6 @@ import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -29,7 +28,6 @@ import java.util.Locale;
 import java.util.Random;
 
 import info.movito.themoviedbapi.TmdbApi;
-import info.movito.themoviedbapi.TmdbGenre;
 import info.movito.themoviedbapi.TmdbMovies;
 import info.movito.themoviedbapi.TmdbPeople;
 import info.movito.themoviedbapi.TmdbTV;
@@ -47,12 +45,12 @@ public class DisplayItemActivity extends AppCompatActivity {
     private List<PersonPeople> personas;
     private String LANG = Common.DEVICE_LANG, POSTER_PATH_ORIGINAL, BACKDROP_PATH_ORIGINAL, BASE_PATH_IMG = null;
     private final int IMG_WIDTH = 500;
-    private ImageView header_img;
+    private ImageView display_item_appbar_img;
     private RelativeLayout header_box;
     private NestedScrollView display_item_nested;
     private CoordinatorLayout coordinator;
-    private CollapsingToolbarLayout collapsing;
-    private AppBarLayout appbar;
+    private CollapsingToolbarLayout display_item_collapsing;
+    private AppBarLayout display_item_appbar;
     private TextView title, overview, vote_avg, release_date;
     private Toolbar toolbar;
     private boolean INCOMMING_SEARCH;
@@ -67,17 +65,16 @@ public class DisplayItemActivity extends AppCompatActivity {
             finish();
         } else {
 
-            try {
-                BASE_PATH_IMG = Utility.getConfigurationTMDBAPI(getApplicationContext()).getSecureBaseUrl();
-            } catch (NullPointerException ignored) {
-
-            }
+            BASE_PATH_IMG = Utility.getBaseUrlTMDBAPI();
 
             toolbar = (Toolbar) findViewById(R.id.toolbar_display_item);
             setSupportActionBar(toolbar);
-            getSupportActionBar().setDisplayShowTitleEnabled(false);
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setDisplayShowHomeEnabled(true);
+
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setTitle("");
+                getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+                getSupportActionBar().setDisplayShowHomeEnabled(true);
+            }
 
             final Intent openingMovie = getIntent();
             Bundle bundle = openingMovie.getExtras();
@@ -101,13 +98,13 @@ public class DisplayItemActivity extends AppCompatActivity {
 
     private void setColorType(int type) {
         switch (type) {
-            case 0:
+            case Common.TMDB_CODE_MOVIES:
                 header_box.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.bg_display_item_movie));
                 break;
-            case 1:
+            case Common.TMDB_CODE_PEOPLE:
                 header_box.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.bg_display_item_person));
                 break;
-            case 2:
+            case Common.TMDB_CODE_SERIES:
                 header_box.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.bg_display_item_tvserie));
                 break;
             default:
@@ -134,18 +131,17 @@ public class DisplayItemActivity extends AppCompatActivity {
     }
 
     private void loadViewsToolbar() {
-        header_img = (ImageView) findViewById(R.id.display_item_img);
-        collapsing = (CollapsingToolbarLayout) findViewById(R.id.display_item_collapsing);
-//        collapsing.setContentScrimColor(ContextCompat.getColor(getApplicationContext(), R.color.bg_item_recyclerview_serie));
-        appbar = (AppBarLayout) findViewById(R.id.display_item_appbar);
-        appbar.setExpanded(true);
+        display_item_appbar_img = (ImageView) findViewById(R.id.display_item_img);
+        display_item_collapsing = (CollapsingToolbarLayout) findViewById(R.id.display_item_collapsing);
+        display_item_appbar = (AppBarLayout) findViewById(R.id.display_item_appbar);
+        display_item_appbar.setExpanded(true);
     }
 
     private void loadActionsToolbar() {
-/*        appbar.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
+/*        display_item_appbar.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
             @Override
             public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
-                if (collapsing.getHeight() + verticalOffset < 2 * ViewCompat.getMinimumHeight(collapsing)) {
+                if (display_item_collapsing.getHeight() + verticalOffset < 2 * ViewCompat.getMinimumHeight(display_item_collapsing)) {
                     toolbar.setBackgroundColor(Color.argb(0, 0, 0, 0));
                 } else {
                     toolbar.setBackgroundResource(R.drawable.bg_toolbar_display_item);
@@ -164,9 +160,9 @@ public class DisplayItemActivity extends AppCompatActivity {
 
         display_item_nested = (NestedScrollView) findViewById(R.id.display_item_nested);
         display_item_nested.setVisibility(View.GONE);
+        display_item_nested.smoothScrollTo(0, 0);
 
         display_item_recyclerview_people = (RecyclerView) findViewById(R.id.display_item_people);
-
         display_item_recyclerview_people.setHasFixedSize(true);
         display_item_recyclerview_people.setLayoutManager(new GridLayoutManager(this, 1, GridLayoutManager.HORIZONTAL, false));
 //        display_item_recyclerview_people.setLayoutManager(new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.HORIZONTAL, false));
@@ -188,7 +184,7 @@ public class DisplayItemActivity extends AppCompatActivity {
 
         protected List<Artwork> doInBackground(Integer... code) {
             switch (type) {
-                case 0:
+                case Common.TMDB_CODE_MOVIES:
                     TmdbMovies movies = new TmdbApi("1947a2516ec6cb3cf97ef1da21fdaa87").getMovies();
                     MovieImages imgs = movies.getImages(code[0], null);
 
@@ -208,16 +204,12 @@ public class DisplayItemActivity extends AppCompatActivity {
             } else {
                 path = POSTER_PATH_ORIGINAL;
 
-                if (type == 2 && BACKDROP_PATH_ORIGINAL != null) {
+                if (type == Common.TMDB_CODE_PEOPLE && BACKDROP_PATH_ORIGINAL != null) {
                     path = BACKDROP_PATH_ORIGINAL;
                 }
             }
 
-            while (BASE_PATH_IMG.equals("")) {
-
-            }
-
-            Picasso.with(getApplicationContext()).load(BASE_PATH_IMG + "w" + IMG_WIDTH + path).into(header_img, new com.squareup.picasso.Callback() {
+            Picasso.with(getApplicationContext()).load(BASE_PATH_IMG + "w" + IMG_WIDTH + path).into(display_item_appbar_img, new com.squareup.picasso.Callback() {
                 @Override
                 public void onSuccess() {
 //                    fadeInActivity();
@@ -250,7 +242,7 @@ public class DisplayItemActivity extends AppCompatActivity {
 
         protected Multi doInBackground(Integer... code) {
             switch (type) {
-                case 0:
+                case Common.TMDB_CODE_MOVIES:
 
                     TmdbMovies movies = new TmdbApi("1947a2516ec6cb3cf97ef1da21fdaa87").getMovies();
                     MovieDb movie = movies.getMovie(code[0], LANG);
@@ -272,9 +264,9 @@ public class DisplayItemActivity extends AppCompatActivity {
                     setLIST_CAST(movies.getCredits(code[0]).getCast());
 
                     return movie;
-                case 1:
+                case Common.TMDB_CODE_PEOPLE:
                     TmdbPeople people = new TmdbApi("1947a2516ec6cb3cf97ef1da21fdaa87").getPeople();
-                    PersonPeople person = people.getPersonInfo(code[0], (String) null);
+                    PersonPeople person = people.getPersonInfo(code[0], LANG);
 
                     setDATA_TITLE(person.getName());
                     setDATA_OVERVIEW("");
@@ -288,7 +280,7 @@ public class DisplayItemActivity extends AppCompatActivity {
                     setDATA_VOTE_AVG(-1);
 
                     return person;
-                case 2:
+                case Common.TMDB_CODE_SERIES:
                     TmdbTV series = new TmdbApi("1947a2516ec6cb3cf97ef1da21fdaa87").getTvSeries();
                     TvSeries serie = series.getSeries(code[0], LANG);
 
@@ -433,7 +425,7 @@ public class DisplayItemActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_search:
-                startActivity(new Intent(this, BuscarActivity.class));
+                startActivity(new Intent(this, SearchActivity.class));
                 this.overridePendingTransition(R.animator.pull_right, R.animator.push_left);
                 return true;
             case android.R.id.home:

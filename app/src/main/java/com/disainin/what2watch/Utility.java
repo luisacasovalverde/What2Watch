@@ -16,6 +16,7 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.Settings;
+import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.util.DisplayMetrics;
 import android.view.Display;
@@ -26,6 +27,8 @@ import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Transformation;
+
+import org.apache.commons.lang3.ObjectUtils;
 
 import info.movito.themoviedbapi.model.config.TmdbConfiguration;
 
@@ -47,16 +50,22 @@ public class Utility {
         }
     }
 
-    public static TmdbConfiguration getConfigurationTMDBAPI(Context context) {
+    @Nullable
+    public static TmdbConfiguration getConfigurationTMDBAPI() throws Exception {
+        ConfigurationTaskTMDBAPI configurationTask = new ConfigurationTaskTMDBAPI();
+        configurationTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        return configurationTask.get();
+    }
+
+    public static String getBaseUrlTMDBAPI() throws NullPointerException {
         try {
-            ConfigurationTaskTMDBAPI configurationTask = new ConfigurationTaskTMDBAPI();
-            configurationTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-            return configurationTask.get();
-        } catch (Exception e) {
-            Toast.makeText(context, "Hay problemas de conexión con servidores externos", Toast.LENGTH_SHORT).show();
+            if (getConfigurationTMDBAPI() != null) {
+                return getConfigurationTMDBAPI().getSecureBaseUrl();
+            }
+        } catch (Exception ignored) {
         }
 
-        return null;
+        return "https://image.tmdb.org/t/p/";
     }
 
     public static void getImageRounded(Context context, String url, final int r, final int m, ImageView img, Integer placeholder) {

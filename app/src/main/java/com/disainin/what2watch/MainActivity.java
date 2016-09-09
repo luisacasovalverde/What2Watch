@@ -129,7 +129,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnFr
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_search:
-                startActivity(new Intent(this, BuscarActivity.class));
+                startActivity(new Intent(this, SearchActivity.class));
                 this.overridePendingTransition(R.animator.pull_right, R.animator.push_left);
                 return true;
         }

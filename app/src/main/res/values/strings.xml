@@ -1,7 +1,8 @@
 <resources>
+    <string name="app_company">Disainin</string>
     <string name="app_name">What 2 Watch</string>
     <string name="app_logo_name">W2W</string>
-    <string name="app_copyright">disasinin © 2016</string>
+    <string name="app_copyright">Disainin © 2016</string>
 
     <string name="general_home">Inicio</string>
     <string name="general_settings">Ajustes</string>
@@ -10,19 +11,17 @@
     <string name="general_share">Compartir</string>
 
     <string name="warning_no_connection">Es necesario estar conectado a internet</string>
-    <string name="warning_no_lang_overview">La sinopsis no está disponible en español. Disculpa las molestias.</string>
+    <string name="warning_no_lang_overview">La sinopsis no está disponible en español.\nDisculpa las molestias.</string>
+    <string name="warning_no_results">Sin resultados</string>
+    <string name="warning_no_more_results">No hay más resultados</string>
 
-    <string name="bv_vacio"></string>
-    <string name="bv_escuchando">Escuchando…</string>
-    <string name="bv_reconociendo">Reconociendo…</string>
-    <string name="bv_error_desconexion">No hay conexión…</string>
-    <string name="bv_no_results">No hay resultados</string>
+    <string name="search_hint">Busca películas, series o personas</string>
+    <string name="search_voice_empty"> </string>
+    <string name="search_voice_listening">Escuchando…</string>
+    <string name="search_voice_recognizing">Reconociendo…</string>
 
     <string name="fa_mic">&#xf130;</string>
     <string name="fa_search">&#xf002;</string>
-
-    <string name="search_hint">Busca películas o series</string>
-    <string name="search_no_results">Lo que intentas buscar no está disponible</string>
 
     <string name="attr_img_voice_query">Buscar por voz</string>
     <string name="attr_img_back">Ir atrás</string>

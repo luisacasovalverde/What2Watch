@@ -1,6 +1,6 @@
 <resources>
     <string name="app_company">Disainin</string>
-    <string name="app_name">What 2 Watch</string>
+    <string name="app_name">The Spotlight</string>
     <string name="app_logo_name">W2W</string>
     <string name="app_copyright">Disainin © 2016</string>
 
@@ -29,4 +29,8 @@
     <string name="attr_img_display_item">Posters de los items a consultar</string>
 
     <string name="permission_record_audio">¡Es necesario permitir el uso del micrófono!</string>
+
+    <string name="message_share_movie" formatted="false">¡Apúntate esta peli en la app %s!\n\nProtagoniazda por %s y %s.\n\n¡Tiene un %s!</string>
+    <string name="message_share_tvserie" formatted="false">¡Apúntate esta serie en la app %s!\n\nProtagoniazda por %s y %s.\n\n¡Tiene un %s!</string>
+
 </resources>

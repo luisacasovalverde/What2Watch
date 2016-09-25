@@ -17,13 +17,26 @@
             android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity android:name=".MainActivity" />
         <activity android:name=".SearchActivity" />
-        <activity android:name=".DisplayItemActivity"></activity>
+        <activity android:name=".DisplayItemActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="share.disainin.com"
+                    android:pathPrefix="/thespotlight"
+                    android:scheme="http" />
+
+                <data android:scheme="tsshare" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

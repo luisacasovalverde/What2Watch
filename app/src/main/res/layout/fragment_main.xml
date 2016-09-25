@@ -11,5 +11,4 @@
     tools:context="com.disainin.what2watch.MainActivity"
     tools:showIn="@layout/activity_main">
 
-
 </RelativeLayout>

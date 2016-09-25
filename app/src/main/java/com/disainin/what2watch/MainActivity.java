@@ -1,17 +1,30 @@
 package com.disainin.what2watch;
 
+
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.content.Intent;
 import android.net.Uri;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+import android.widget.Toast;
 
 
 public class MainActivity extends AppCompatActivity implements MainFragment.OnFragmentInteractionListener {
 
     private Toolbar toolbar;
+
+//    private static final String TAG_SEARCH_FRAGMENT = "fragment_search_task";
+//    private SearchFragment fragmentSearchTask;
+//    FragmentManager fm;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,6 +36,17 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnFr
         getSupportActionBar().setTitle(getString(R.string.general_home));
 
         setNavigationActions();
+
+
+//        fm = getSupportFragmentManager();
+//        mTaskFragment = (SearchFragment) fm.findFragmentByTag(TAG_TASK_FRAGMENT);
+//
+//        // If the Fragment is non-null, then it is currently being
+//        // retained across a configuration change.
+//        if (mTaskFragment == null) {
+//            mTaskFragment = new SearchFragment();
+//            fm.beginTransaction().add(R.id.search_content, mTaskFragment, TAG_TASK_FRAGMENT).commit();
+//        }
 
 
 //        loadViews();
@@ -72,6 +96,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnFr
 //        Typeface fontawesome = Typeface.createFromAsset(getAssets(), "fonts/fontawesome-webfont.ttf");
 //        Typeface font_roboto_thin = Typeface.createFromAsset(getAssets(), "fonts/Roboto-Thin.ttf");
     }
+
 
     @Override
     public void onFragmentInteraction(Uri uri) {
@@ -136,5 +161,4 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnFr
 
         return super.onOptionsItemSelected(item);
     }
-
 }

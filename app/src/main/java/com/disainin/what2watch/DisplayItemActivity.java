@@ -1,6 +1,8 @@
 package com.disainin.what2watch;
 
 import android.content.Intent;
+import android.drm.DrmStore;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
@@ -43,7 +45,7 @@ import info.movito.themoviedbapi.model.tv.TvSeries;
 public class DisplayItemActivity extends AppCompatActivity {
 
     private List<PersonPeople> personas;
-    private String LANG = Common.DEVICE_LANG, POSTER_PATH_ORIGINAL, BACKDROP_PATH_ORIGINAL, BASE_PATH_IMG = null;
+    private String LANG = Common.DEVICE_LANG, POSTER_PATH_ORIGINAL, BACKDROP_PATH_ORIGINAL, BASE_PATH_IMG = null, URL_SHARE = "";
     private final int IMG_WIDTH = 500;
     private ImageView display_item_appbar_img;
     private RelativeLayout header_box;
@@ -77,16 +79,27 @@ public class DisplayItemActivity extends AppCompatActivity {
             }
 
             final Intent openingMovie = getIntent();
-            Bundle bundle = openingMovie.getExtras();
 
-            INCOMMING_SEARCH = bundle.getBoolean("display_item_search");
+            if (openingMovie.getScheme() == null) {
+                Bundle bundle = openingMovie.getExtras();
 
-            POSTER_PATH_ORIGINAL = bundle.getString("display_item_poster_path");
-            BACKDROP_PATH_ORIGINAL = bundle.getString("display_item_backdrop_path");
+                INCOMMING_SEARCH = bundle.getBoolean("display_item_search");
+                POSTER_PATH_ORIGINAL = bundle.getString("display_item_poster_path");
+                BACKDROP_PATH_ORIGINAL = bundle.getString("display_item_backdrop_path");
 
+                new ItemImagesTaskTMDBAPI(bundle.getInt("display_item_type")).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, bundle.getInt("display_item_id"));
+                new ItemTaskTMDBAPI(bundle.getInt("display_item_type")).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, bundle.getInt("display_item_id"));
+            } else {
+                Uri data = openingMovie.getData();
 
-            new ItemImagesTaskTMDBAPI(bundle.getInt("display_item_type")).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, bundle.getInt("display_item_id"));
-            new ItemTaskTMDBAPI(bundle.getInt("display_item_type")).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, bundle.getInt("display_item_id"));
+                INCOMMING_SEARCH = false;
+                POSTER_PATH_ORIGINAL = "";
+                BACKDROP_PATH_ORIGINAL = "";
+
+                new ItemImagesTaskTMDBAPI(getTypeFromString(data.getPathSegments().get(2))).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, Integer.parseInt(data.getPathSegments().get(3)));
+                new ItemTaskTMDBAPI(getTypeFromString(data.getPathSegments().get(2))).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, Integer.parseInt(data.getPathSegments().get(3)));
+            }
+
 
             loadViewsToolbar();
             loadActionsToolbar();
@@ -94,6 +107,20 @@ public class DisplayItemActivity extends AppCompatActivity {
             loadViews();
         }
 
+    }
+
+
+    private int getTypeFromString(String type) {
+        switch (type) {
+            case "movie":
+                return Common.TMDB_CODE_MOVIES;
+            case "people":
+                return Common.TMDB_CODE_PEOPLE;
+            case "tv":
+                return Common.TMDB_CODE_SERIES;
+        }
+
+        return -1;
     }
 
     private void setColorType(int type) {
@@ -185,10 +212,17 @@ public class DisplayItemActivity extends AppCompatActivity {
         protected List<Artwork> doInBackground(Integer... code) {
             switch (type) {
                 case Common.TMDB_CODE_MOVIES:
-                    TmdbMovies movies = new TmdbApi("1947a2516ec6cb3cf97ef1da21fdaa87").getMovies();
+                    TmdbMovies movies = new TmdbApi(Common.TMDB_APIKEY).getMovies();
                     MovieImages imgs = movies.getImages(code[0], null);
 
                     return imgs.getBackdrops();
+                case Common.TMDB_CODE_SERIES:
+                    TmdbTV series = new TmdbApi(Common.TMDB_APIKEY).getTvSeries();
+                    TvSeries tvs = series.getSeries(code[0], Common.DEVICE_LANG);
+                    POSTER_PATH_ORIGINAL = tvs.getPosterPath();
+                    BACKDROP_PATH_ORIGINAL = tvs.getBackdropPath();
+
+                    return null;
             }
 
             return null;
@@ -263,6 +297,8 @@ public class DisplayItemActivity extends AppCompatActivity {
                     setDATA_VOTE_AVG(movie.getVoteAverage());
                     setLIST_CAST(movies.getCredits(code[0]).getCast());
 
+                    setURL_SHARE(String.format(getString(R.string.message_share_movie), getString(R.string.app_name), getLIST_CAST().get(0).getName(), getLIST_CAST().get(1).getName(), setIfScoreInt(movie.getVoteAverage())) + "\n\nhttp://share.disainin.com/thespotlight/" + Common.DEVICE_LANG_SHORT + "/" + movie.getMediaType().toString().toLowerCase() + "/" + movie.getId());
+
                     return movie;
                 case Common.TMDB_CODE_PEOPLE:
                     TmdbPeople people = new TmdbApi("1947a2516ec6cb3cf97ef1da21fdaa87").getPeople();
@@ -297,6 +333,8 @@ public class DisplayItemActivity extends AppCompatActivity {
                     setDATA_RELEASE_DATE(serie.getFirstAirDate().substring(0, 4));
                     setDATA_VOTE_AVG(serie.getVoteAverage());
                     setLIST_CAST(series.getCredits(code[0], LANG).getCast());
+
+                    setURL_SHARE(String.format(getString(R.string.message_share_tvserie), getString(R.string.app_name), getLIST_CAST().get(0).getName(), getLIST_CAST().get(1).getName(), setIfScoreInt(serie.getVoteAverage())) + "\n\nhttp://share.disainin.com/thespotlight/" + Common.DEVICE_LANG_SHORT + "/" + serie.getMediaType().toString().toLowerCase().substring(0, 2) + "/" + serie.getId());
 
                     return serie;
             }
@@ -343,6 +381,7 @@ public class DisplayItemActivity extends AppCompatActivity {
 
                 fadeInActivity();
             }
+
         }
 
         private String setIfScoreInt(float n) {
@@ -356,6 +395,7 @@ public class DisplayItemActivity extends AppCompatActivity {
 
             return String.format(Locale.FRANCE, "%.1f", n);
         }
+
 
         public List<Genre> getLIST_GENRE() {
             return LIST_GENRE;
@@ -406,6 +446,13 @@ public class DisplayItemActivity extends AppCompatActivity {
         }
     }
 
+    public String getURL_SHARE() {
+        return URL_SHARE;
+    }
+
+    public void setURL_SHARE(String URL_SHARE) {
+        this.URL_SHARE = URL_SHARE;
+    }
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
@@ -431,6 +478,12 @@ public class DisplayItemActivity extends AppCompatActivity {
             case android.R.id.home:
                 onBackPressed();
                 return true;
+            case R.id.action_share_variant:
+                Intent sendIntent = new Intent();
+                sendIntent.setAction(Intent.ACTION_SEND);
+                sendIntent.putExtra(Intent.EXTRA_TEXT, getURL_SHARE());
+                sendIntent.setType("text/plain");
+                startActivity(Intent.createChooser(sendIntent, getString(R.string.general_share)));
             default:
                 return super.onOptionsItemSelected(item);
         }

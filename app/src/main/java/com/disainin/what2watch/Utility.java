@@ -50,8 +50,14 @@ public class Utility {
         }
     }
 
+    public static void setNoConnectedWarning(Context context, View layout) {
+        if (!isNetworkConnected(context)) {
+            Snackbar.make(layout, context.getString(R.string.warning_no_connection), Snackbar.LENGTH_LONG).show();
+        }
+    }
+
     @Nullable
-    public static TmdbConfiguration getConfigurationTMDBAPI() throws Exception {
+    private static TmdbConfiguration getConfigurationTMDBAPI() throws Exception {
         ConfigurationTaskTMDBAPI configurationTask = new ConfigurationTaskTMDBAPI();
         configurationTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         return configurationTask.get();
@@ -106,7 +112,7 @@ public class Utility {
         });
     }
 
-    public static int getDeviceWidth(Context context) {
+    private static int getDeviceWidth(Context context) {
         WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         Point size = new Point();
         wm.getDefaultDisplay().getSize(size);
@@ -114,7 +120,7 @@ public class Utility {
         return size.x;
     }
 
-    public static int getDeviceHeight(Context context) {
+    private static int getDeviceHeight(Context context) {
         WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         Point size = new Point();
         wm.getDefaultDisplay().getSize(size);
@@ -122,7 +128,7 @@ public class Utility {
         return size.y;
     }
 
-    public static int getDeviceDpi(Context context) {
+    private static int getDeviceDpi(Context context) {
         WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         DisplayMetrics metrics = new DisplayMetrics();
         wm.getDefaultDisplay().getMetrics(metrics);

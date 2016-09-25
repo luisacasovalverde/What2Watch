@@ -27,12 +27,12 @@ public class MultiAdapterTMDBAPI extends RecyclerView.Adapter<RecyclerView.ViewH
     private List items;
     private AppCompatActivity activity;
     private String URL_DIMENSION_IMG = "w300_and_h450_bestv2", URL_BASE = "https://image.tmdb.org/t/p/";
-    public static final int TYPE_ITEM = 0,
+    private static final int TYPE_ITEM = 0,
             TYPE_FOOTER_LOADER = 1;
     private OnLoadMoreListener mOnLoadMoreListener;
-    private boolean isLoading = false;
+    private boolean loading;
 
-    public class MultiItemViewHolder extends RecyclerView.ViewHolder {
+    private class MultiItemViewHolder extends RecyclerView.ViewHolder {
         private ImageView multi_item_img;
         private TextView multi_item_top, multi_item_bottom;
         private RelativeLayout multi_item_layout;
@@ -48,14 +48,13 @@ public class MultiAdapterTMDBAPI extends RecyclerView.Adapter<RecyclerView.ViewH
     }
 
 
-    public class FooterViewHolder extends RecyclerView.ViewHolder {
+    private class FooterViewHolder extends RecyclerView.ViewHolder {
         RelativeLayout loading_layout;
 
         public FooterViewHolder(View view) {
             super(view);
 
             loading_layout = (RelativeLayout) itemView.findViewById(R.id.multi_item_loading_layout);
-//            loading = (RelativeLayout) itemView.findViewById(R.id.multi_item_loading_layout);
         }
     }
 
@@ -194,7 +193,7 @@ public class MultiAdapterTMDBAPI extends RecyclerView.Adapter<RecyclerView.ViewH
     }
 
     public void createLoader() {
-        isLoading = true;
+        setLoading(true);
         items.add(null);
         notifyItemInserted(items.size() - 1);
     }
@@ -202,21 +201,19 @@ public class MultiAdapterTMDBAPI extends RecyclerView.Adapter<RecyclerView.ViewH
     public void removeLoader() {
         items.remove(items.size() - 1);
         notifyItemRemoved(items.size());
-        isLoading = false;
+        setLoading(false);
     }
 
-    public void removeAt(int position) {
-        items.remove(position);
-        notifyItemRemoved(position);
-//        notifyItemRangeChanged(position, items.size());
-    }
-
+//    public void removeAt(int position) {
+//        items.remove(position);
+//        notifyItemRemoved(position);
+////        notifyItemRangeChanged(position, items.size());
+//    }
 
     @Override
     public int getItemViewType(int position) {
         return items.get(position) == null ? TYPE_FOOTER_LOADER : TYPE_ITEM;
     }
-
 
     @Override
     public int getItemCount() {
@@ -231,7 +228,11 @@ public class MultiAdapterTMDBAPI extends RecyclerView.Adapter<RecyclerView.ViewH
         return items;
     }
 
-    public void setLoaded() {
-        isLoading = false;
+    public boolean isLoading() {
+        return loading;
+    }
+
+    private void setLoading(boolean loading) {
+        this.loading = loading;
     }
 }
